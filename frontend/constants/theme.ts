@@ -20,6 +20,25 @@ export const theme = {
   },
 };
 
+export const Colors = {
+  light: {
+    text: materialTheme.schemes.light.onSurface,
+    background: materialTheme.schemes.light.surface,
+    tint: materialTheme.schemes.light.primary,
+    icon: materialTheme.schemes.light.onSurfaceVariant,
+    tabIconDefault: materialTheme.schemes.light.onSurfaceVariant,
+    tabIconSelected: materialTheme.schemes.light.primary,
+  },
+  dark: {
+    text: materialTheme.schemes.dark.onSurface,
+    background: materialTheme.schemes.dark.surface,
+    tint: materialTheme.schemes.dark.primary,
+    icon: materialTheme.schemes.dark.onSurfaceVariant,
+    tabIconDefault: materialTheme.schemes.dark.onSurfaceVariant,
+    tabIconSelected: materialTheme.schemes.dark.primary,
+  },
+};
+
 /** Font families */
 export const Fonts = Platform.select({
   ios: {
