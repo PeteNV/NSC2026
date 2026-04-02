@@ -1,32 +1,45 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
+import materialTheme from '../assets/material-theme.json';
+import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
+/** Material 3 Integration */
+export const theme = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    ...MD3LightTheme,
+    colors: {
+      ...MD3LightTheme.colors,
+      ...materialTheme.schemes.light,
+    },
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    ...MD3DarkTheme,
+    colors: {
+      ...MD3DarkTheme.colors,
+      ...materialTheme.schemes.dark,
+    },
   },
 };
 
+export const Colors = {
+  light: {
+    text: materialTheme.schemes.light.onSurface,
+    background: materialTheme.schemes.light.surface,
+    tint: materialTheme.schemes.light.primary,
+    icon: materialTheme.schemes.light.onSurfaceVariant,
+    tabIconDefault: materialTheme.schemes.light.onSurfaceVariant,
+    tabIconSelected: materialTheme.schemes.light.primary,
+  },
+  dark: {
+    text: materialTheme.schemes.dark.onSurface,
+    background: materialTheme.schemes.dark.surface,
+    tint: materialTheme.schemes.dark.primary,
+    icon: materialTheme.schemes.dark.onSurfaceVariant,
+    tabIconDefault: materialTheme.schemes.dark.onSurfaceVariant,
+    tabIconSelected: materialTheme.schemes.dark.primary,
+  },
+};
+
+/** Font families */
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
