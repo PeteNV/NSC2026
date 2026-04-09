@@ -1,12 +1,9 @@
-import { NativeModule, requireNativeModule } from 'expo';
+import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 import { RoomScannerModuleEvents } from './RoomScanner.types';
 
 declare class RoomScannerModule extends NativeModule<RoomScannerModuleEvents> {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+  isSupported: boolean;
 }
 
-// This call loads the native module object from the JSI.
-export default requireNativeModule<RoomScannerModule>('RoomScanner');
+export default requireOptionalNativeModule<RoomScannerModule>('RoomScanner');

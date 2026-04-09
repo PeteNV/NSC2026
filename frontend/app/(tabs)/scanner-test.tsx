@@ -7,8 +7,8 @@
 
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
-import RoomScannerModule from '../modules/room-scanner/src/RoomScannerModule';
-import RoomScannerView from '../modules/room-scanner/src/RoomScannerView';
+import RoomScannerModule from '../../modules/room-scanner/src/RoomScannerModule';
+import RoomScannerView from '../../modules/room-scanner/src/RoomScannerView';
 
 export default function ScannerTest() {
   const [isScanning, setIsScanning] = useState(false);

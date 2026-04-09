@@ -1,4 +1,4 @@
-import { viewProps } from 'react-native';
+import { ViewProps } from 'react-native';
 
 export type ApplianceData = {
   id: string;

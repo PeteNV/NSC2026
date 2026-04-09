@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "deploymentTarget": "16.0",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.myEnergy",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires the camera and LiDAR scanner for 3D room mapping."
+      }
     },
     "android": {
       "adaptiveIcon": {
