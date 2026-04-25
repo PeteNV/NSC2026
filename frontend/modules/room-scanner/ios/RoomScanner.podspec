@@ -20,4 +20,5 @@ Pod::Spec.new do |s|
   }
 
   s.source_files = "**/*.{h,m,mm,swift,hpp,cpp}"
+  s.resources = "v1_patched.mlpackage/**"
 end

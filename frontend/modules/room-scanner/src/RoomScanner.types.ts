@@ -1,4 +1,4 @@
-import { ViewProps } from 'react-native';
+import { ViewProps } from "react-native";
 
 export type ApplianceData = {
   id: string;
@@ -29,6 +29,41 @@ export type RoomScannerProps = {
         doorCount: number;
         windowCount: number;
       };
-    }
+    };
   }) => void;
 } & ViewProps;
+
+export type YOLODetection = {
+  label: string;
+  confidence: number;
+  boundingBox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+};
+
+export type ScanResult = {
+  appliances: any[];
+  walls: any[];
+  metadata: {
+    wallCount: number;
+    doorCount: number;
+    windowCount: number;
+  };
+};
+
+export type RoomScannerViewProps = {
+  isScanning?: boolean;
+  onObjectDetected?: (event: {
+    nativeEvent: { detections: YOLODetection[] };
+  }) => void;
+  onScanComplete?: (event: { nativeEvent: ScanResult }) => void;
+  style?: any;
+};
+
+export type RoomScannerModuleEvents = {
+  onScanComplete: (payload: ScanResult) => void;
+  onObjectDetected: (payload: { detections: YOLODetection[] }) => void;
+};

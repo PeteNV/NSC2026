@@ -7,13 +7,19 @@
 
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
+import { NativeModules } from 'react-native';
 import RoomScannerModule from '../../modules/room-scanner/src/RoomScannerModule';
-import RoomScannerView from '../../modules/room-scanner/src/RoomScannerView';
+import RoomScannerView, { isRoomScannerViewAvailable } from '../../modules/room-scanner/src/RoomScannerView';
 
 export default function ScannerTest() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanData, setScanData] = useState<any>(null);
-  const isSupported = RoomScannerModule?.isSupported ?? false;
+  const nativeUnimoduleProxy = NativeModules.NativeUnimoduleProxy;
+  const moduleConstants = nativeUnimoduleProxy?.modulesConstants?.RoomScanner ?? null;
+  const hasRoomScannerModuleConstant = Boolean(moduleConstants);
+  const roomScannerIsSupportedFlag = RoomScannerModule?.isSupported ?? null;
+  const hasRoomScannerViewManager = Boolean(nativeUnimoduleProxy?.viewManagersMetadata?.RoomScanner);
+  const isSupported = (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
 
   return (
     <View style={styles.container}>
@@ -39,6 +45,14 @@ export default function ScannerTest() {
       </View>
 
       <View style={styles.controls}>
+        <View style={styles.debugPanel}>
+          <Text style={styles.debugTitle}>Debug gates</Text>
+          <Text style={styles.debugLine}>moduleConstant: {String(hasRoomScannerModuleConstant)}</Text>
+          <Text style={styles.debugLine}>moduleIsSupported: {String(roomScannerIsSupportedFlag)}</Text>
+          <Text style={styles.debugLine}>viewManagerMetadata: {String(hasRoomScannerViewManager)}</Text>
+          <Text style={styles.debugLine}>isRoomScannerViewAvailable: {String(isRoomScannerViewAvailable)}</Text>
+          <Text style={styles.debugLine}>finalIsSupported: {String(isSupported)}</Text>
+        </View>
         <Button
           title={isScanning ? 'Stop Scanning' : 'Start Room Scan'}
           onPress={() => setIsScanning(!isScanning)}
@@ -78,6 +92,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   controls: { flex: 1, backgroundColor: '#fff', padding: 20 },
+  debugPanel: {
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#f4f4f4',
+    borderRadius: 8,
+  },
+  debugTitle: { fontWeight: '700', marginBottom: 4 },
+  debugLine: { fontSize: 12, color: '#333' },
   results: { marginTop: 10, backgroundColor: '#f4f4f4', padding: 10 },
   title: { fontWeight: 'bold', marginBottom: 5 },
 });
