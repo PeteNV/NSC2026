@@ -55,6 +55,7 @@ export type ScanResult = {
 };
 
 export type RoomScannerViewProps = {
+  scanning?: boolean;
   isScanning?: boolean;
   onObjectDetected?: (event: {
     nativeEvent: { detections: YOLODetection[] };

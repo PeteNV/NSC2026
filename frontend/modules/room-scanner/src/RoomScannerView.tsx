@@ -1,51 +1,47 @@
 import { requireNativeViewManager } from "expo-modules-core";
 import * as React from "react";
-import { NativeModules, View } from "react-native";
+import { Platform, View } from "react-native";
 import { RoomScannerViewProps } from "./RoomScanner.types";
 
-const viewManagersMetadata = NativeModules.NativeUnimoduleProxy?.viewManagersMetadata ?? {};
-const roomScannerModule = NativeModules.NativeUnimoduleProxy?.modulesConstants?.RoomScanner ?? null;
+let NativeView: any;
+let viewAvailable = false;
 
-function debugLog(hypothesisId: string, message: string, data: Record<string, unknown>) {
-  // #region agent log
-  fetch("http://127.0.0.1:7361/ingest/27a670c6-387b-4182-b229-95f8b143735b", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "fbbefc" },
-    body: JSON.stringify({
-      sessionId: "fbbefc",
-      runId: "initial",
-      hypothesisId,
-      location: "frontend/modules/room-scanner/src/RoomScannerView.tsx",
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
+try {
+  // Try to load the modern Expo module view
+  NativeView = requireNativeViewManager("RoomScanner");
+  viewAvailable = true;
+} catch (e) {
+  // Fallback if not found
+  NativeView = View;
+  viewAvailable = false;
+  console.log("Failed to load RoomScanner native view:", e);
 }
 
-debugLog("H1", "room scanner metadata snapshot", {
-  hasNativeUnimoduleProxy: Boolean(NativeModules.NativeUnimoduleProxy),
-  hasRoomScannerViewManager: Boolean(viewManagersMetadata.RoomScanner),
-  viewManagerKeys: Object.keys(viewManagersMetadata).slice(0, 20),
-});
-debugLog("H2", "room scanner module constants snapshot", {
-  hasRoomScannerModuleConstants: Boolean(roomScannerModule),
-  roomScannerModuleKeys: roomScannerModule ? Object.keys(roomScannerModule) : [],
-});
-
-export const isRoomScannerViewAvailable = Boolean(viewManagersMetadata.RoomScanner);
-
-const NativeView = isRoomScannerViewAvailable ? requireNativeViewManager("RoomScanner") : View;
+// 1. Export the true/false status so your parent debug screen can see it!
+export const isRoomScannerViewAvailable = viewAvailable;
 
 export default function RoomScannerView(props: RoomScannerViewProps) {
-  React.useEffect(() => {
-    debugLog("H3", "room scanner view render path", {
-      isRoomScannerViewAvailable,
-      nativeViewType: isRoomScannerViewAvailable ? "RoomScanner(native)" : "View(fallback)",
-      propKeys: Object.keys(props ?? {}),
-    });
-  }, [props]);
+  const normalizedProps = {
+    ...props,
+    scanning: props.scanning ?? props.isScanning,
+  };
 
-  return <NativeView {...props} />;
+  // 2. Render the native LiDAR view if available
+  if (Platform.OS === "ios" && viewAvailable) {
+    return <NativeView {...normalizedProps} style={[{ flex: 1 }, props.style]} />;
+  }
+
+  // 3. Fallback UI
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#300",
+      }}
+    >
+      {/* This is the red screen. If you see this, viewAvailable is false. */}
+    </View>
+  );
 }
