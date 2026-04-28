@@ -16,7 +16,11 @@ import ARKit
 class YOLODetector {
     private var visionModel: VNCoreMLModel?
     private var isProcessing = false
+    
+    // Runs model inference on a background queue so camera capture stays responsive
     private let processingQueue = DispatchQueue(label: "RoomScanner.YOLODetector", qos: .userInitiated)
+    
+    // Protects `isProcessing` from being read/written by multiple threads at once
     private let stateQueue = DispatchQueue(label: "RoomScanner.YOLODetector.state")
 
     // Defines callback function to handle async data (optional closure)
@@ -33,7 +37,7 @@ class YOLODetector {
 
     // Process frame function
     func processFrame(_ pixelBuffer: CVPixelBuffer) {
-        // Prevent overlapping requests
+        // Prevent overlapping requests by skipping frame if the previous one is still being processed
         guard beginProcessing() else { return }
 
         // If vision model hasn't been loaded yet, try to load it now
@@ -46,7 +50,7 @@ class YOLODetector {
             finishProcessing()
             return
         }
-
+        // Make a copy as the original camera buffer might be reused after this method returns
         guard let copiedPixelBuffer = copyPixelBuffer(pixelBuffer) else {
             print("YOLO Error: Failed to copy camera frame for processing.")
             finishProcessing()
@@ -68,6 +72,8 @@ class YOLODetector {
     }
 
     private func beginProcessing() -> Bool {
+        // In Swift, guard is an exit check
+        // If processing is already in progress, return false immediately
         stateQueue.sync {
             guard !isProcessing else {
                 return false
@@ -159,6 +165,8 @@ class YOLODetector {
     }
 
     private func loadModel() {
+        // For debugging purposes
+        // CoreML models can be shipped either in an already compiled .mlmodelc or .mlpackage
         let config = MLModelConfiguration()
 
         guard let modelURL = modelPackageURL() else {
@@ -186,6 +194,8 @@ class YOLODetector {
     }
 
     private func modelPackageURL() -> URL? {
+        // Search likely resource bundles first, then fall back to all loaded bundles
+        // This is defensive because packaging can differ between app targets, pods, and frameworks (Xcode)
         let modelName = "v1_patched"
         let moduleBundle = Bundle(for: YOLODetector.self)
 
@@ -232,8 +242,11 @@ class YOLODetector {
     }
 
     private func handleDetections(request: VNRequest) {
+        // Convert Vision/CoreML results into a simple dictionary/JSON-like structure
         guard let results = request.results as? [VNRecognizedObjectObservation] else {
             DispatchQueue.main.async {
+                // Back to the main thread before invoking the callback
+                // because UI-related code usually must run there.
                 self.onDetectionsFound?(["detections": []])
             }
             return
@@ -244,7 +257,7 @@ class YOLODetector {
         for observation in results {
             guard let topLabel = observation.labels.first else { continue }
 
-            // Above 50% confidence
+            // Detection threshold set at above 50% confidence
             if topLabel.confidence > 0.50 {
                 let item: [String: Any] = [
                     "label": topLabel.identifier,
