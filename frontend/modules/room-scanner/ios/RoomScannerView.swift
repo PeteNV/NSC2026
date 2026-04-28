@@ -7,6 +7,7 @@ import UIKit
 
 @available(iOS 16.0, *)
 public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelegate {
+    // RoomPlan does room reconstruction while YOLO runs object detection on sampled frames.
     private var roomCaptureView: RoomCaptureView?
     private let roomCaptureSessionConfig = RoomCaptureSession.Configuration()
     private var yoloDetector: YOLODetector?
@@ -56,6 +57,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
             let hasDetections = self.renderDetections(from: jsonPayload)
             self.logDetections(from: jsonPayload, hasDetections: hasDetections)
 
+            // Emits empty payloads after detections disappear so JavaScript can clear stale UI state.
             if hasDetections || self.lastHadDetections {
                 self.onObjectDetected(jsonPayload)
             }
@@ -66,6 +68,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
 
     @discardableResult
     private func renderDetections(from payload: [String: Any]) -> Bool {
+        // Rebuilds the overlay from the latest detector output instead of diffing individual layers.
         detectionOverlayView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
 
         guard
@@ -130,6 +133,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
     private func convertNormalizedRect(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> CGRect {
         let viewWidth = detectionOverlayView.bounds.width
         let viewHeight = detectionOverlayView.bounds.height
+        // Vision uses a normalized coordinate space with the origin at the lower-left.
         let convertedY = 1 - y - height
 
         return CGRect(
@@ -151,6 +155,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
         }
 
         let now = Date()
+        // Limits console noise while preserving enough detail to confirm the detector is active.
         guard now.timeIntervalSince(lastLoggedDetectionDate) >= 0.5 else { return }
         lastLoggedDetectionDate = now
 
@@ -170,6 +175,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
     public func session(_ session: ARSession, didUpdate frame: ARFrame) {
         frameCounter += 1
 
+        // Samples every Nth AR frame so RoomPlan remains responsive while detection runs in parallel.
         if frameCounter % detectionFrameInterval == 0, let yoloDetector, yoloDetector.isReadyForNextFrame {
             yoloDetector.processFrame(frame.capturedImage)
         }
@@ -179,6 +185,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
         if scanning {
             roomCaptureView?.captureSession.run(configuration: roomCaptureSessionConfig)
         } else {
+            // Resets transient detector state when scanning stops so the next session starts cleanly.
             roomCaptureView?.captureSession.stop()
             detectionOverlayView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
             lastHadDetections = false
@@ -190,6 +197,7 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
     }
 
     public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {
+        // Flattens RoomPlan output into Expo dictionaries before emitting completion.
         let walls = processedResult.walls.map { wall -> [String: Any] in
             return [
                 "id": wall.identifier.uuidString,
