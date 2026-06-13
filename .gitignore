@@ -39,10 +39,25 @@ yarn-error.*
 app-example
 
 # generated native folders
-/ios
+# track the folders, but ignore the local build artifacts
 /android
+/ios
 
-# Supabase
+# ignore specific local/generated files within those folders
+ios/.xcode.env.local
+ios/Pods/
+ios/build/
+ios/*.xcworkspace
+android/.gradle
+android/build
+android/app/build
+android/local.properties
+# -----------------------------
+
+bin/
+test-results
+
+# supabase
 .branches
 .temp
 
@@ -50,3 +65,4 @@ app-example
 .env.keys
 .env.local
 .env.*.local
+

@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "deploymentTarget": "16.0",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.myEnergy",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires the camera and LiDAR scanner for 3D room mapping."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +24,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.myEnergy"
     },
     "web": {
       "output": "static",
@@ -38,7 +44,10 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
