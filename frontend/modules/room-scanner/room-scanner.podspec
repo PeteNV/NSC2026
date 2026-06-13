@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'RoomScanner'
+  s.name           = 'room-scanner'
   s.version        = '1.0.0'
   s.summary        = 'A sample project summary'
   s.description    = 'A sample project description'
@@ -21,6 +21,6 @@ Pod::Spec.new do |s|
 
   s.source_files = "**/*.{h,m,mm,swift,hpp,cpp}"
   s.resource_bundles = {
-    'RoomScannerResources' => ['v1_patched.mlpackage', 'v1_patched.mlmodelc']
+    'RoomScannerResources' => ['v1_patched.mlpackage', 'ios/v1_patched.mlmodelc']
   }
 end

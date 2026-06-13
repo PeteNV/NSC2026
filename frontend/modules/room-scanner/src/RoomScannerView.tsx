@@ -1,24 +1,38 @@
-import { requireNativeViewManager } from "expo-modules-core";
+import {
+  requireNativeViewManager,
+  requireOptionalNativeModule,
+} from "expo-modules-core";
 import * as React from "react";
 import { Platform, View } from "react-native";
 import { RoomScannerViewProps } from "./RoomScanner.types";
 
 let NativeView: any;
 let viewAvailable = false;
+let resolvedNativeViewName: string | null = null;
 
-try {
-  // Try to load the modern Expo module view
-  NativeView = requireNativeViewManager("RoomScanner");
-  viewAvailable = true;
-} catch (e) {
-  // Fallback if not found
-  NativeView = View;
-  viewAvailable = false;
-  console.log("Failed to load RoomScanner native view:", e);
+for (const moduleName of ["RoomScanner", "room-scanner"]) {
+  const nativeModule = requireOptionalNativeModule(moduleName);
+
+  if (!nativeModule) {
+    continue;
+  }
+
+  try {
+    NativeView = requireNativeViewManager(moduleName);
+    viewAvailable = true;
+    resolvedNativeViewName = moduleName;
+    break;
+  } catch (e) {
+    console.log(`Failed to load ${moduleName} native view:`, e);
+  }
 }
 
-// 1. Export the true/false status so your parent debug screen can see it!
+if (!NativeView) {
+  NativeView = View;
+}
+
 export const isRoomScannerViewAvailable = viewAvailable;
+export const roomScannerNativeViewName = resolvedNativeViewName;
 
 export default function RoomScannerView(props: RoomScannerViewProps) {
   const normalizedProps = {

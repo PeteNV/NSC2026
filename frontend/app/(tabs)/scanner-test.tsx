@@ -7,9 +7,12 @@
 
 import React, { useState } from "react";
 import { Button, NativeModules, ScrollView, StyleSheet, Text, View } from "react-native";
-import RoomScannerModule from "../../modules/room-scanner/src/RoomScannerModule";
+import RoomScannerModule, {
+  roomScannerNativeModuleName,
+} from "../../modules/room-scanner/src/RoomScannerModule";
 import RoomScannerView, {
   isRoomScannerViewAvailable,
+  roomScannerNativeViewName,
 } from "../../modules/room-scanner/src/RoomScannerView";
 
 export default function ScannerTest() {
@@ -18,11 +21,14 @@ export default function ScannerTest() {
   const [yoloData, setYoloData] = useState<any>(null);
   const nativeUnimoduleProxy = NativeModules.NativeUnimoduleProxy;
   const moduleConstants =
-    nativeUnimoduleProxy?.modulesConstants?.RoomScanner ?? null;
+    nativeUnimoduleProxy?.modulesConstants?.RoomScanner ??
+    nativeUnimoduleProxy?.modulesConstants?.["room-scanner"] ??
+    null;
   const hasRoomScannerModuleConstant = Boolean(moduleConstants);
   const roomScannerIsSupportedFlag = RoomScannerModule?.isSupported ?? null;
   const hasRoomScannerViewManager = Boolean(
-    nativeUnimoduleProxy?.viewManagersMetadata?.RoomScanner,
+    nativeUnimoduleProxy?.viewManagersMetadata?.RoomScanner ??
+      nativeUnimoduleProxy?.viewManagersMetadata?.["room-scanner"],
   );
   const isSupported =
     (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
@@ -60,6 +66,12 @@ export default function ScannerTest() {
       <View style={styles.controls}>
         <View style={styles.debugPanel}>
           <Text style={styles.debugTitle}>Debug</Text>
+          <Text style={styles.debugLine}>
+            nativeModuleName: {String(roomScannerNativeModuleName)}
+          </Text>
+          <Text style={styles.debugLine}>
+            nativeViewName: {String(roomScannerNativeViewName)}
+          </Text>
           <Text style={styles.debugLine}>
             moduleConstant: {String(hasRoomScannerModuleConstant)}
           </Text>

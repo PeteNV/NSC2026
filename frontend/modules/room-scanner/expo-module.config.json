@@ -1,7 +1,9 @@
 {
   "platforms": ["apple", "android", "web"],
   "apple": {
-    "modules": ["RoomScannerModule"]
+    "modules": ["RoomScannerModule"],
+    "podspecPath": "room-scanner.podspec",
+    "swiftModuleName": "room_scanner"
   },
   "android": {
     "modules": ["expo.modules.roomscanner.RoomScannerModule"]
