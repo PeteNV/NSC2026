@@ -6,6 +6,7 @@ import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { M3Button } from '@/components/test-button';
 
 export default function HomeScreen() {
   return (
@@ -36,6 +37,7 @@ export default function HomeScreen() {
           to open developer tools.
         </ThemedText>
       </ThemedView>
+      <M3Button title="yhhelhlahleh" onPress={() => alert('Button pressed')} />
       <ThemedView style={styles.stepContainer}>
         <Link href="/modal">
           <Link.Trigger>
