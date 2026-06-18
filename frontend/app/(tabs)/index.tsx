@@ -7,6 +7,8 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { M3Button } from '@/components/test-button';
+import Estimate from '@/components/estimate';
+import Mapping from '@/components/map';
 
 export default function HomeScreen() {
   return (
@@ -24,6 +26,8 @@ export default function HomeScreen() {
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <Estimate/>
+        <Mapping/>
         <ThemedText>
           Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
           Press{' '}
@@ -99,5 +103,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  link: {
+    marginTop: 15,
+    paddingVertical: 15,
   },
 });
