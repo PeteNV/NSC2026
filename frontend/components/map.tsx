@@ -86,46 +86,43 @@ export default function Mapping() {
 const styles = StyleSheet.create ({
     buttons: {
         flexDirection: 'row',
-        margin: 20,
+        margin: 10,
         gap: 5,
         justifyContent:'center',
     },
     chosenbutton: {
-        width: 121.25,
+        width: '25%',
         borderRadius: 20,
         backgroundColor: theme.light.colors.secondary
     },
     centerbutton: {
-        width: 121.25,
+        width: '25%',
         borderRadius: 5,
-        flexDirection: 'row',
-        justifyContent:'center',
-        alignSelf: 'center',
         backgroundColor: theme.light.colors.secondaryContainer
     },
     rightbutton: {
-        width: 121.25,
+        width: '25%',
         borderTopRightRadius: 100,
         borderBottomRightRadius: 100,
         borderBottomLeftRadius: 15,
         borderTopLeftRadius: 15,
-        flexDirection: 'row',
-        justifyContent:'center',
-        alignSelf: 'center',
         backgroundColor: theme.light.colors.secondaryContainer
     },
     box: {
-        width: 500,
-        height: 400,
+        width: '100%',
+        height: '100%',
         borderWidth: 2,
         borderColor: theme.light.colors.outlineVariant,
         borderRadius: 8, 
         justifyContent: 'center',
-        alignSelf: 'center',
         backgroundColor: 'transparent',
+        flexWrap: 'wrap',
+        flex: 1,
+        minWidth: 0,
+        alignContent: 'center'
     },
     scanbutton: {
-        width: 400,
+        width: '75%',
         borderTopLeftRadius: 100,
         borderBottomLeftRadius: 100,
         borderBottomRightRadius: 15,
@@ -139,7 +136,7 @@ const styles = StyleSheet.create ({
         justifyContent:'center',
     },
     dropdown: {
-        width: 95,
+        width: '25%',
         borderTopRightRadius: 100,
         borderBottomRightRadius: 100,
         borderBottomLeftRadius: 15,

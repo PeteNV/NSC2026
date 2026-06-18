@@ -27,7 +27,7 @@ export default function Estimate() {
     </View>
           <M3Button title="View Full Report" onPress={() => alert('Button pressed')}></M3Button>
         </ThemedView>
-    );
+    ); 
 }
 
 const styles = StyleSheet.create({
