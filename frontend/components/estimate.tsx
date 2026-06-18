@@ -8,7 +8,7 @@ export default function Estimate() {
     return (
         <ThemedView style={styles.usage}>
           <ThemedText type="defaultSemiBold" style={{ color: theme.light.colors.onSurface }}>Usage</ThemedText>
-          <ThemedText type="title" style={{ marginTop: 15, fontSize: 50, color: theme.light.colors.onPrimaryContainer }}> ~1,234 {''}
+          <ThemedText type="title" style={{ fontSize: 50, lineHeight: 55, color: theme.light.colors.onPrimaryContainer }}>~1,234 {''}
             <ThemedText type="subtitle" style={{ fontSize: 20, color: theme.light.colors.onPrimaryContainer }}>kWh </ThemedText>
           </ThemedText>
           <ThemedText type="subtitle" style={{color: theme.light.colors.secondary}}> +520 {''}
@@ -32,9 +32,7 @@ export default function Estimate() {
 
 const styles = StyleSheet.create({
     usage: {
-        width: 500,
-        flex: 1,
-        justifyContent:'center',
+        width: '100%',
         padding: 20,
         borderRadius: 15, 
         textAlign: 'left',
@@ -42,18 +40,19 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     month: {
-        padding: 16,
+        padding: 12,
         gap: 4,
         justifyContent:'center',
-        textAlign: 'left',
         backgroundColor: theme.light.colors.surfaceBright,
         borderRadius: 15,
-        width: 200,
+        flexWrap: 'wrap',
+        flex: 1,
+        minWidth: 0,
     },
     rows: {
         flexDirection: 'row',
-        margin: 20,
-        gap: 10,
-        justifyContent:'center',
+        marginVertical: 10,
+        gap: 8,
+        width: '100%',
     },
 })
