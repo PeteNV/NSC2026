@@ -22,7 +22,7 @@ export default function Estimate() {
             </View>
             <View style={styles.month}>
                 <ThemedText type = "defaultSemiBold" style={{ color: theme.light.colors.secondary }}>CO2 Footprint</ThemedText>
-                <ThemedText type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>14.79 Kilograms</ThemedText>
+                <ThemedText type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>14.79 kg</ThemedText>
             </View>
     </View>
           <M3Button title="View Full Report" onPress={() => alert('Button pressed')}></M3Button>
@@ -42,11 +42,10 @@ const styles = StyleSheet.create({
     month: {
         padding: 12,
         gap: 4,
-        justifyContent:'center',
+        justifyContent:'left',
         backgroundColor: theme.light.colors.surfaceBright,
         borderRadius: 15,
         flexWrap: 'wrap',
-        flex: 1,
         minWidth: 0,
     },
     rows: {
