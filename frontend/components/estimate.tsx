@@ -2,15 +2,14 @@ import { M3Button } from '@/components/test-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { theme } from '@/constants/theme';
-import { StyleSheet } from 'react-native';
-import { View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 
 export default function Estimate() {
     return (
         <ThemedView style={styles.usage}>
           <ThemedText type="defaultSemiBold" style={{ color: theme.light.colors.onSurface }}>Usage</ThemedText>
-          <ThemedText type="title" style={{ color: theme.light.colors.onPrimaryContainer }}> ~1,234 {''}
-            <ThemedText type="subtitle" style={{ color: theme.light.colors.onPrimaryContainer }}>kWh </ThemedText>
+          <ThemedText type="title" style={{ marginTop: 15, fontSize: 50, color: theme.light.colors.onPrimaryContainer }}> ~1,234 {''}
+            <ThemedText type="subtitle" style={{ fontSize: 20, color: theme.light.colors.onPrimaryContainer }}>kWh </ThemedText>
           </ThemedText>
           <ThemedText type="subtitle" style={{color: theme.light.colors.secondary}}> +520 {''}
             <ThemedText type="default" style={{ color: theme.light.colors.secondary }}>kWh from Base Estimation of 714 kWh </ThemedText>
@@ -40,6 +39,7 @@ const styles = StyleSheet.create({
         borderRadius: 15, 
         textAlign: 'left',
         backgroundColor: theme.light.colors.surfaceContainer,
+        alignSelf: 'center',
     },
     month: {
         padding: 16,
