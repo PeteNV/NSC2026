@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { MD3DarkTheme, MD3LightTheme } from "react-native-paper";
 import materialTheme from "../assets/material-theme.json";
+import { useTheme } from 'react-native-paper';
 
 /** Material 3 Integration */
 export const theme = {
@@ -37,6 +38,11 @@ export const Colors = {
     tabIconDefault: theme.dark.colors.onSurfaceVariant,
     tabIconSelected: theme.dark.colors.primary,
   },
+};
+
+const MyComponent = () => {
+  const theme = useTheme();
+  console.log(theme.fonts); // See all available font variants
 };
 
 /** Font families */
