@@ -28,28 +28,28 @@ export default function Mapping() {
     return(
             <ThemedView>
                 <View style = {styles.buttons}>
-                    <View style = {styles.chosenbutton}>
+                    <View style = {[styles.chosenbutton, { backgroundColor: colors.secondary }]}>
                     <Button onPress={() => alert('Floor 1 selected')}>
                     <Text variant = "labelLarge" style={{ color: colors.onSecondary }}>
                         F1
                     </Text>
                     </Button>
                     </View>
-                    <View style = {styles.centerbutton}>
+                    <View style = {[styles.centerbutton, { backgroundColor: colors.secondaryContainer }]}>
                     <Button onPress={() => alert('Floor 2 selected')}>
                     <Text variant = "labelLarge" style={{ color: colors.secondary }}>
                         F2
                     </Text>
                     </Button>
                     </View>
-                    <View style = {styles.centerbutton}>
+                    <View style = {[styles.centerbutton, { backgroundColor: colors.secondaryContainer }]}>
                     <Button onPress={() => alert('Floor 3 selected')}>
                     <Text variant = "labelLarge" style={{ color: colors.secondary }}>
                         F3
                     </Text>
                     </Button>
                     </View>
-                    <View style = {styles.rightbutton}>
+                    <View style = {[styles.rightbutton, { backgroundColor: colors.secondaryContainer }]}>
                     <Button onPress={() => alert('Floor 4 selected')}>
                     <Text variant = "labelLarge" style={{ color: colors.secondary }}>
                         F4
@@ -57,20 +57,20 @@ export default function Mapping() {
                     </Button>
                     </View>
                 </View>
-                <View style = {styles.box}>
+                <View style = {[styles.box, { backgroundColor: colors.outlineVariant}]}>
                     <Text variant = "labelLarge" style={{ textAlign: 'center', color: colors.secondary }}>
                         Insert Map Here
                     </Text>
                 </View>
                 <View style = {styles.scanning}>
-                    <View style = {styles.scanbutton}>
+                    <View style = {[styles.scanbutton, { backgroundColor: colors.primary }]}>
                     <Button onPress={() => alert('Scanning Room...')}>
                     <Text variant = "labelLarge" style={{ color: colors.onPrimary }}>
                         Scan Room
                     </Text>
                     </Button>
                     </View>
-                    <View style = {styles.dropdown}>
+                    <View style = {[styles.dropdown, { backgroundColor: colors.primary }]}>
                     <Button onPress={() => alert('Template')}>
                     <Text variant = "labelLarge" style={{ color: colors.onPrimary }}>
                         A
@@ -92,12 +92,10 @@ const styles = StyleSheet.create ({
     chosenbutton: {
         width: '25%',
         borderRadius: 20,
-        backgroundColor: theme.light.colors.secondary
     },
     centerbutton: {
         width: '25%',
         borderRadius: 5,
-        backgroundColor: theme.light.colors.secondaryContainer
     },
     rightbutton: {
         width: '25%',
@@ -105,13 +103,11 @@ const styles = StyleSheet.create ({
         borderBottomRightRadius: 100,
         borderBottomLeftRadius: 15,
         borderTopLeftRadius: 15,
-        backgroundColor: theme.light.colors.secondaryContainer
     },
     box: {
         width: '100%',
         height: '100%',
         borderWidth: 2,
-        borderColor: theme.light.colors.outlineVariant,
         borderRadius: 8, 
         justifyContent: 'center',
         backgroundColor: 'transparent',
@@ -126,7 +122,6 @@ const styles = StyleSheet.create ({
         borderBottomLeftRadius: 100,
         borderBottomRightRadius: 15,
         borderTopRightRadius: 15,
-        backgroundColor: theme.light.colors.primary,
     },
     scanning: {
         flexDirection: 'row',
@@ -140,6 +135,5 @@ const styles = StyleSheet.create ({
         borderBottomRightRadius: 100,
         borderBottomLeftRadius: 15,
         borderTopLeftRadius: 15,
-        backgroundColor: theme.light.colors.primary,
     }
 })
