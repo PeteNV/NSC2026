@@ -2,7 +2,7 @@ import { ThemedView } from '@/components/themed-view';
 import { theme } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 import { ThemedText } from './themed-text';
 
 type Props = {
@@ -29,51 +29,51 @@ export default function Mapping() {
                 <View style = {styles.buttons}>
                     <View style = {styles.chosenbutton}>
                     <Button onPress={() => alert('Floor 1 selected')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.onSecondary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.onSecondary }}>
                         F1
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                     <View style = {styles.centerbutton}>
                     <Button onPress={() => alert('Floor 2 selected')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.secondary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.secondary }}>
                         F2
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                     <View style = {styles.centerbutton}>
                     <Button onPress={() => alert('Floor 3 selected')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.secondary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.secondary }}>
                         F3
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                     <View style = {styles.rightbutton}>
                     <Button onPress={() => alert('Floor 4 selected')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.secondary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.secondary }}>
                         F4
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                 </View>
                 <View style = {styles.box}>
-                    <ThemedText type = "default" style={{ textAlign: 'center', color: theme.light.colors.secondary }}>
+                    <Text variant = "labelLarge" style={{ textAlign: 'center', color: theme.light.colors.secondary }}>
                         Insert Map Here
-                    </ThemedText>
+                    </Text>
                 </View>
                 <View style = {styles.scanning}>
                     <View style = {styles.scanbutton}>
                     <Button onPress={() => alert('Scanning Room...')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.onPrimary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.onPrimary }}>
                         Scan Room
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                     <View style = {styles.dropdown}>
                     <Button onPress={() => alert('Template')}>
-                    <ThemedText type = "default" style={{ color: theme.light.colors.onPrimary }}>
+                    <Text variant = "labelLarge" style={{ color: theme.light.colors.onPrimary }}>
                         A
-                    </ThemedText>
+                    </Text>
                     </Button>
                     </View>
                 </View>
