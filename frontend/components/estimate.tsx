@@ -11,10 +11,10 @@ export default function Estimate() {
         <ThemedView style={[styles.usage, { borderWidth: 1, borderColor: colors.outline }]}>
           <Text variant="titleSmall" style={{ color: colors.onSurface }}>Usage</Text>
           <Text variant="displaySmall" style={{ fontSize: 50, lineHeight: 55, color: colors.onPrimaryContainer }}>~ {''}
-            <Text variant="displayLarge" style={{ fontSize: 50, lineHeight: 55, color: colors.onPrimaryContainer }}>1,234 {''}</Text>
+            <Text variant="displayLarge" style={{ fontWeight: 'bold', fontSize: 50, lineHeight: 55, color: colors.onPrimaryContainer }}>1,234 {''}</Text>
             <Text variant="displaySmall" style={{ fontSize: 20, color: colors.onPrimaryContainer }}>kWh </Text>
           </Text>
-          <Text variant="bodyMedium" style={{color: colors.secondary}}> +520 {''}
+          <Text variant="bodyMedium" style={{ fontWeight: "bold", color: colors.secondary}}> +520 {''}
             <Text variant="bodyMedium" style={{ color: colors.secondary }}>kWh from Base Estimation of 714 kWh </Text>
           </Text>
             <View style={{ backgroundColor: theme.light.colors.surfaceContainer, margin: 10, borderBottomWidth: 1, borderBottomColor: theme.light.colors.outline, marginHorizontal: 8 }} />

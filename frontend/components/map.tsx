@@ -20,11 +20,7 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
 export default function Mapping() {
   const { colors } = useTheme();
   return (
-    <ThemedView
-      style={[
-        { borderRadius: 15, borderWidth: 1, borderColor: colors.outline },
-      ]}
-    >
+    <ThemedView style={[{ padding: 10, borderRadius: 15, borderWidth: 1, borderColor: colors.outline }]}>
       <View style={styles.buttons}>
         <View
           style={[styles.chosenbutton, { backgroundColor: colors.secondary }]}
@@ -72,7 +68,7 @@ export default function Mapping() {
           </Button>
         </View>
       </View>
-      <View style={[styles.box, { backgroundColor: colors.outlineVariant }]}>
+      <View style={styles.box}>
         <Text
           variant="labelLarge"
           style={{ textAlign: "center", color: colors.secondary }}
