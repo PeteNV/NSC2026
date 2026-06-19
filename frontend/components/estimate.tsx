@@ -8,7 +8,7 @@ import { Button, Text, useTheme } from "react-native-paper";
 export default function Estimate() {
       const { colors } = useTheme();
     return (
-        <ThemedView style={styles.usage}>
+        <ThemedView style={[styles.usage, { borderWidth: 1, borderColor: colors.outline }]}>
           <Text variant="titleSmall" style={{ color: colors.onSurface }}>Usage</Text>
           <Text variant="displaySmall" style={{ fontSize: 50, lineHeight: 55, color: colors.onPrimaryContainer }}>~ {''}
             <Text variant="displayLarge" style={{ fontSize: 50, lineHeight: 55, color: colors.onPrimaryContainer }}>1,234 {''}</Text>
@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
         borderRadius: 15, 
         backgroundColor: theme.light.colors.surfaceContainer,
         alignSelf: 'center',
+        borderWidth: 1
     },
     month: {
         padding: 12,
