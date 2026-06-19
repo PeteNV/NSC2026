@@ -7,24 +7,24 @@ import { StyleSheet, View, Text } from 'react-native';
 export default function Estimate() {
     return (
         <ThemedView style={styles.usage}>
-          <ThemedText type="defaultSemiBold" style={{ color: theme.light.colors.onSurface }}>Usage</ThemedText>
-          <ThemedText type="title" style={{ fontSize: 50, lineHeight: 55, color: theme.light.colors.onPrimaryContainer }}>~1,234 {''}
-            <ThemedText type="subtitle" style={{ fontSize: 20, color: theme.light.colors.onPrimaryContainer }}>kWh </ThemedText>
-          </ThemedText>
-          <ThemedText type="subtitle" style={{color: theme.light.colors.secondary}}> +520 {''}
-            <ThemedText type="default" style={{ color: theme.light.colors.secondary }}>kWh from Base Estimation of 714 kWh </ThemedText>
-          </ThemedText>
-          <ThemedView style={{ backgroundColor: theme.light.colors.surfaceContainer, margin: 10, borderBottomWidth: 1, borderBottomColor: theme.light.colors.outline, marginHorizontal: 8 }} />
+          <Text type="defaultSemiBold" style={{ color: theme.light.colors.onSurface }}>Usage</Text>
+          <Text type="title" style={{ fontSize: 50, lineHeight: 55, color: theme.light.colors.onPrimaryContainer }}>~1,234 {''}
+            <Text type="subtitle" style={{ fontSize: 20, color: theme.light.colors.onPrimaryContainer }}>kWh </Text>
+          </Text>
+          <Text type="subtitle" style={{color: theme.light.colors.secondary}}> +520 {''}
+            <Text type="default" style={{ color: theme.light.colors.secondary }}>kWh from Base Estimation of 714 kWh </Text>
+          </Text>
+            <View style={{ backgroundColor: theme.light.colors.surfaceContainer, margin: 10, borderBottomWidth: 1, borderBottomColor: theme.light.colors.outline, marginHorizontal: 8 }} />
         <View style={styles.rows}>
             <View style={styles.month}>
-                <ThemedText type = "defaultSemiBold" style={{ color: theme.light.colors.secondary }}>Monthly Estimate</ThemedText>
-                <ThemedText type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>~2,159 Baht</ThemedText>
+                <Text type = "defaultSemiBold" style={{ color: theme.light.colors.secondary }}>Monthly Estimate</Text>
+                <Text type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>~2,159 Baht</Text>
             </View>
             <View style={styles.month}>
-                <ThemedText type = "defaultSemiBold" style={{ color: theme.light.colors.secondary }}>CO2 Footprint</ThemedText>
-                <ThemedText type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>14.79 kg</ThemedText>
+                <Text type = "defaultSemiBold" style={{ color: theme.light.colors.secondary }}>CO2 Footprint</Text>
+                <Text type = "defaultSemiBold" style={{ fontSize: 18, color: theme.light.colors.onPrimaryContainer }}>14.79 kg</Text>
             </View>
-    </View>
+        </View>
           <M3Button title="View Full Report" onPress={() => alert('Button pressed')}></M3Button>
         </ThemedView>
     ); 

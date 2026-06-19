@@ -1,11 +1,9 @@
-import { M3Button } from '@/components/test-button';
 import { ThemedView } from '@/components/themed-view';
 import { theme } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { ThemedText } from './themed-text';
-import { View } from 'react-native';
 
 type Props = {
   title: string;
