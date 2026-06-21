@@ -1,7 +1,7 @@
-import { ThemedView } from "@/components/themed-view";
+import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 
 type Props = {
   title: string;
@@ -20,7 +20,17 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
 export default function Mapping() {
   const { colors } = useTheme();
   return (
-    <ThemedView style={[{ padding: 10, borderRadius: 15, borderWidth: 1, borderColor: colors.outline }]}>
+    <View
+      style={[
+        {
+          padding: 10,
+          borderRadius: 15,
+          borderWidth: 1,
+          borderColor: colors.outlineVariant,
+          backgroundColor: colors.surface,
+        },
+      ]}
+    >
       <View style={styles.buttons}>
         <View
           style={[styles.chosenbutton, { backgroundColor: colors.secondary }]}
@@ -92,7 +102,7 @@ export default function Mapping() {
           </Button>
         </View>
       </View>
-    </ThemedView>
+    </View>
   );
 }
 

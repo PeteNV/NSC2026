@@ -1,7 +1,6 @@
 import { Platform } from "react-native";
-import { MD3DarkTheme, MD3LightTheme } from "react-native-paper";
-import materialTheme from "../assets/material-theme.json";
-import { useTheme } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, useTheme } from "react-native-paper";
+import materialTheme from "./material-theme.json";
 
 /** Material 3 Integration */
 export const theme = {
