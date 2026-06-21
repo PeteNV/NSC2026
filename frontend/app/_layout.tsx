@@ -1,4 +1,3 @@
-import "@/style/global.css";
 import {
   DarkTheme,
   DefaultTheme,
