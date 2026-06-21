@@ -1,8 +1,7 @@
-import { M3Button } from "@/components/test-button";
 import { useTheme } from "@/hooks/useTheme";
 import { theme } from "@/static/theme";
 import { StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 
 export default function Estimate() {
   const { colors } = useTheme();
@@ -90,10 +89,13 @@ export default function Estimate() {
           </Text>
         </View>
       </View>
-      <M3Button
-        title="View Full Report"
+      <Button
+        icon={"camera"}
+        mode="contained"
         onPress={() => alert("Button pressed")}
-      ></M3Button>
+      >
+        View Full Report
+      </Button>
     </View>
   );
 }

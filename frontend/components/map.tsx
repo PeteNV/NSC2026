@@ -1,7 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, FAB, Text } from "react-native-paper";
 
 type Props = {
   title: string;
@@ -17,7 +17,7 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
   );
 }
 
-export default function Mapping() {
+export default function Map() {
   const { colors } = useTheme();
   return (
     <View
@@ -87,20 +87,7 @@ export default function Mapping() {
         </Text>
       </View>
       <View style={styles.scanning}>
-        <View style={[styles.scanbutton, { backgroundColor: colors.primary }]}>
-          <Button onPress={() => alert("Scanning Room...")}>
-            <Text variant="labelLarge" style={{ color: colors.onPrimary }}>
-              Scan Room
-            </Text>
-          </Button>
-        </View>
-        <View style={[styles.dropdown, { backgroundColor: colors.primary }]}>
-          <Button onPress={() => alert("Template")}>
-            <Text variant="labelLarge" style={{ color: colors.onPrimary }}>
-              A
-            </Text>
-          </Button>
-        </View>
+        <FAB icon="plus" />
       </View>
     </View>
   );
@@ -141,7 +128,7 @@ const styles = StyleSheet.create({
     alignContent: "center",
   },
   scanbutton: {
-    width: "75%",
+    flex: 1,
     borderTopLeftRadius: 100,
     borderBottomLeftRadius: 100,
     borderBottomRightRadius: 15,
