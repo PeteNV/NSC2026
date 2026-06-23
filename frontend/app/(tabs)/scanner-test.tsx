@@ -6,7 +6,14 @@
 //
 
 import React, { useState } from "react";
-import { Button, NativeModules, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Button,
+  NativeModules,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import RoomScannerModule, {
   roomScannerNativeModuleName,
 } from "../../modules/room-scanner/src/RoomScannerModule";
@@ -28,7 +35,7 @@ export default function ScannerTest() {
   const roomScannerIsSupportedFlag = RoomScannerModule?.isSupported ?? null;
   const hasRoomScannerViewManager = Boolean(
     nativeUnimoduleProxy?.viewManagersMetadata?.RoomScanner ??
-      nativeUnimoduleProxy?.viewManagersMetadata?.["room-scanner"],
+    nativeUnimoduleProxy?.viewManagersMetadata?.["room-scanner"],
   );
   const isSupported =
     (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
@@ -97,7 +104,9 @@ export default function ScannerTest() {
         <ScrollView style={styles.results}>
           <Text style={styles.title}>YOLO Detections:</Text>
           <Text>
-            {yoloData ? JSON.stringify(yoloData, null, 2) : "No detections yet..."}
+            {yoloData
+              ? JSON.stringify(yoloData, null, 2)
+              : "No detections yet..."}
           </Text>
           <Text style={styles.sectionTitle}>RoomPlan Results:</Text>
           <Text>
