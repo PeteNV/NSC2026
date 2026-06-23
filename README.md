@@ -1,50 +1,66 @@
-# Welcome to your Expo app 👋
+# myEnergy
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Energy monitoring app with 3D room scanning (LiDAR / iOS RoomPlan).
 
-## Get started
+## Tech Stack
 
-1. Install dependencies
+- **Frontend**: Expo SDK 55, React Native 0.83.6, Expo Router, TypeScript (strict)
+- **UI**: react-native-paper (Material Design 3) with custom Material 3 theme
+- **Backend**: Supabase (local dev in `backend/supabase/`)
+- **Native**: iOS RoomPlan + YOLO via custom `room-scanner` module
+- **iOS minimum**: 16.6 (LiDAR required)
 
-   ```bash
-   npm install
-   ```
+## Project Layout
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+frontend/          # Expo/RN app
+├── app/           # Expo Router file-based routes
+├── components/    # Reusable UI components
+├── constants/     # Theme/font constants
+├── hooks/         # Custom hooks
+├── modules/       # Native modules (room-scanner)
+└── assets/        # Images, Material 3 theme JSON
+backend/           # Supabase config + ML scripts
+├── supabase/      # Local Supabase config (config.toml)
+└── scripts/       # Python scripts, ML models (YOLO)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
+```bash
+# Install dependencies (root for frontend)
+cd frontend && npm install
 
-To learn more about developing your project with Expo, look at the following resources:
+# Start Expo dev server
+cd frontend && npx expo start
+# Press 'w' for web, 'i' for iOS simulator
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Android/iOS native builds
+npx expo run:android   # in frontend/
+npm expo run:ios      # in frontend/
 
-## Join the community
+# Lint
+cd frontend && npm run lint
 
-Join our community of developers creating universal apps.
+# Supabase local dev (from backend/)
+cd backend && npx supabase start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Key Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm expo run --dev-client` | Start Expo dev server |
+| `npx expo run:ios` | Build & run on iOS simulator |
+| `npm expo run:android` | Build & run on Android |
+| `npm run lint` | ESLint via `expo lint` |
+| `npm expo start` | Start Expo for web |
+
+## Architecture Notes
+
+- File-based routing via `app/` directory (Expo Router)
+- Native tabs via `expo-router/unstable-native-tabs`
+- Path alias `@/*` maps to `frontend/*`
+- Custom native module `room-scanner` in `frontend/modules/room-scanner/`
+- Material 3 theme colors in `assets/material-theme.json`
+- New Architecture enabled (`newArchEnabled: true`)
