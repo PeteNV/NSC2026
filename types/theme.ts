@@ -1,3 +1,3 @@
-import { theme } from "@/static/theme";
+import { theme } from "@/assets/theme";
 
 export type AppTheme = typeof theme.light;

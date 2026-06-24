@@ -9,7 +9,8 @@ import { Stack } from "expo-router";
 import { useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
-import { theme } from "../static/theme";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { theme } from "../assets/theme";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -24,12 +25,14 @@ export default function RootLayout() {
   const navTheme = colorScheme === "dark" ? DarkTheme : DefaultTheme;
 
   return (
-    <PaperProvider theme={activeTheme}>
-      <ThemeProvider value={navTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </ThemeProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={activeTheme}>
+        <ThemeProvider value={navTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </ThemeProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
