@@ -7,19 +7,19 @@
 
 import React, { useState } from "react";
 import {
-  Button,
-  NativeModules,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Button,
+    NativeModules,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import RoomScannerModule, {
-  roomScannerNativeModuleName,
+    roomScannerNativeModuleName,
 } from "../../modules/room-scanner/src/RoomScannerModule";
 import RoomScannerView, {
-  isRoomScannerViewAvailable,
-  roomScannerNativeViewName,
+    isRoomScannerViewAvailable,
+    roomScannerNativeViewName,
 } from "../../modules/room-scanner/src/RoomScannerView";
 
 export default function ScannerTest() {
