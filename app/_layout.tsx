@@ -9,7 +9,7 @@ import { Stack } from "expo-router";
 import { useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
-import { theme } from "../static/theme";
+import { theme } from "../assets/theme";
 
 export const unstable_settings = {
   anchor: "(tabs)",

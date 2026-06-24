@@ -1,5 +1,6 @@
+import { theme } from "@/assets/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { theme } from "@/static/theme";
+import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 
