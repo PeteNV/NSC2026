@@ -14,6 +14,7 @@ import {
     Text,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoomScannerModule, {
     roomScannerNativeModuleName,
 } from "../../modules/room-scanner/src/RoomScannerModule";
@@ -23,6 +24,7 @@ import RoomScannerView, {
 } from "../../modules/room-scanner/src/RoomScannerView";
 
 export default function ScannerTest() {
+  const insets = useSafeAreaInsets();
   const [isScanning, setIsScanning] = useState(false);
   const [scanData, setScanData] = useState<any>(null);
   const [yoloData, setYoloData] = useState<any>(null);
@@ -41,7 +43,7 @@ export default function ScannerTest() {
     (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.scannerContainer}>
         {isSupported ? (
           <RoomScannerView

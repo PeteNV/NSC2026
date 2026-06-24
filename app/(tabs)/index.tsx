@@ -1,25 +1,44 @@
 import Estimate from "@/components/estimate";
 import Map from "@/components/map";
 import { useTheme } from "@/hooks/useTheme";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Estimate />
-      <Map />
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: colors.background, paddingTop: insets.top },
+      ]}
+    >
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.container}
+      >
+        <Estimate />
+        <Map />
+        <Estimate />
+        <Map />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  container: {
     gap: 16,
     paddingHorizontal: 16,
-    paddingTop: 96,
+    paddingBottom: 32,
   },
   stepContainer: {
     gap: 8,
