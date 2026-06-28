@@ -1,7 +1,9 @@
-import Estimate from "@/components/estimate";
-import Map from "@/components/map";
+import FloorIndicator from "@/components/common/FloorIndicator";
+import Map from "@/components/common/Map";
+import Estimate from "@/components/home/Estimate";
 import { useTheme } from "@/hooks/useTheme";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { Card } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -20,9 +22,18 @@ export default function HomeScreen() {
         contentContainerStyle={styles.container}
       >
         <Estimate />
-        <Map />
-        <Estimate />
-        <Map />
+        <Card
+          style={[
+            styles.card,
+            {
+              borderColor: colors.outlineVariant,
+              backgroundColor: colors.surface,
+            },
+          ]}
+        >
+          <FloorIndicator />
+          <Map />
+        </Card>
       </ScrollView>
     </View>
   );
@@ -40,19 +51,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 32,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  card: {
+    padding: 16,
+    borderWidth: 1,
   },
 });
