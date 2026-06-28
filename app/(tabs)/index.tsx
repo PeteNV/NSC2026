@@ -31,8 +31,10 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <FloorIndicator />
-          <Map />
+          <Card.Content style={styles.cardContent}>
+            <FloorIndicator floorCount={4} />
+            <Map />
+          </Card.Content>
         </Card>
       </ScrollView>
     </View>
@@ -52,7 +54,9 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   card: {
-    padding: 16,
     borderWidth: 1,
+  },
+  cardContent: {
+    gap: 16,
   },
 });
