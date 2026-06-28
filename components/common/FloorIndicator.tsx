@@ -8,7 +8,7 @@ import { Button, Text } from "react-native-paper";
  * @param param0
  * @returns
  */
-const FloorIndicator = ({ floorCount = 4 }: { floorCount?: number }) => {
+const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
 
