@@ -1,8 +1,7 @@
+import Button from "@/components/wrapper/Button";
 import { useTheme } from "@/hooks/useTheme";
-import { clsx } from "clsx";
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Button, Text } from "react-native-paper";
 
 const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
   const { colors } = useTheme();
@@ -10,48 +9,58 @@ const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
 
   if (floorCount <= 1) return null;
 
-  const BORDER_RADIUS = {
-    default: "rounded",
-    first: "rounded-r rounded-l-[16]",
-    last: "rounded-l rounded-r-[16]",
-    selected: "rounded-full",
-  };
-
   return (
     <View className="flex-row justify-center gap-1">
       {Array.from({ length: floorCount }, (_, i) => i + 1).map(
         (floor, index) => {
           const isSelected = floor === selectedFloor;
 
-          let border_radius: keyof typeof BORDER_RADIUS = "default";
-          if (isSelected) border_radius = "selected";
-          else if (index === 0) border_radius = "first";
-          else if (index === floorCount - 1) border_radius = "last";
+          let borderRadius: number = 4;
+          if (isSelected) borderRadius = 9999;
+          else if (index === 0) borderRadius = 16;
+          else if (index === floorCount - 1) borderRadius = 16;
+
+          let borderTopRightRadius = borderRadius;
+          let borderBottomRightRadius = borderRadius;
+          let borderTopLeftRadius = borderRadius;
+          let borderBottomLeftRadius = borderRadius;
+
+          if (!isSelected) {
+            if (index === 0) {
+              borderTopRightRadius = 4;
+              borderBottomRightRadius = 4;
+              borderTopLeftRadius = 16;
+              borderBottomLeftRadius = 16;
+            } else if (index === floorCount - 1) {
+              borderTopRightRadius = 16;
+              borderBottomRightRadius = 16;
+              borderTopLeftRadius = 4;
+              borderBottomLeftRadius = 4;
+            }
+          }
 
           return (
-            <View
+            <Button
               key={floor}
-              className={clsx(
-                "h-8 flex-1 justify-center transition-all",
-                BORDER_RADIUS[border_radius],
-              )}
+              mode="contained"
+              onPress={() => setSelectedFloor(floor)}
+              buttonColor={
+                isSelected ? colors.secondary : colors.secondaryContainer
+              }
+              textColor={isSelected ? colors.onSecondary : colors.secondary}
+              labelStyle={{ fontSize: 14 }}
+              contentStyle={{ height: 32 }}
               style={{
-                backgroundColor: isSelected
-                  ? colors.secondary
-                  : colors.secondaryContainer,
+                flex: 1,
+                borderRadius,
+                borderTopRightRadius,
+                borderBottomRightRadius,
+                borderTopLeftRadius,
+                borderBottomLeftRadius,
               }}
             >
-              <Button onPress={() => setSelectedFloor(floor)}>
-                <Text
-                  variant="labelLarge"
-                  style={{
-                    color: isSelected ? colors.onSecondary : colors.secondary,
-                  }}
-                >
-                  F{floor}
-                </Text>
-              </Button>
-            </View>
+              F{floor}
+            </Button>
           );
         },
       )}
