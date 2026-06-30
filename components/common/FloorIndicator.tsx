@@ -48,8 +48,6 @@ const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
                 isSelected ? colors.secondary : colors.secondaryContainer
               }
               textColor={isSelected ? colors.onSecondary : colors.secondary}
-              labelStyle={{ fontSize: 14 }}
-              contentStyle={{ height: 32 }}
               style={{
                 flex: 1,
                 borderRadius,
