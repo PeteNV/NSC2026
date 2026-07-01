@@ -1,22 +1,13 @@
-import { theme } from "@/assets/theme";
+import Card from "@/components/common/Card";
 import { useTheme } from "@/hooks/useTheme";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
 
 export default function Estimate() {
   const { colors } = useTheme();
   return (
-    <View
-      style={[
-        styles.usage,
-        {
-          borderWidth: 1,
-          borderColor: colors.outlineVariant,
-          backgroundColor: colors.surfaceContainer,
-        },
-      ]}
-    >
+    <Card>
       <Text variant="titleSmall" style={{ color: colors.onSurface }}>
         Usage
       </Text>
@@ -28,7 +19,7 @@ export default function Estimate() {
           color: colors.onPrimaryContainer,
         }}
       >
-        ~ {""}
+        ~{" "}
         <Text
           variant="displayLarge"
           style={{
@@ -38,7 +29,7 @@ export default function Estimate() {
             color: colors.onPrimaryContainer,
           }}
         >
-          1,234 {""}
+          1,234{" "}
         </Text>
         <Text
           variant="displaySmall"
@@ -52,22 +43,23 @@ export default function Estimate() {
         style={{ fontWeight: "bold", color: colors.secondary }}
       >
         {" "}
-        +520 {""}
+        +520{" "}
         <Text variant="bodyMedium" style={{ color: colors.secondary }}>
           kWh from Base Estimation of 714 kWh{" "}
         </Text>
       </Text>
       <View
+        className="mx-2 border-b"
         style={{
-          backgroundColor: theme.light.colors.surfaceContainer,
-          margin: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.light.colors.outline,
-          marginHorizontal: 8,
+          backgroundColor: colors.surfaceContainer,
+          borderBottomColor: colors.outline,
         }}
       />
-      <View style={styles.rows}>
-        <View style={[styles.month, { backgroundColor: colors.surfaceBright }]}>
+      <View className="w-full flex-row justify-center gap-2">
+        <View
+          className="flex-1 flex-wrap gap-1 rounded-xl p-3"
+          style={{ backgroundColor: colors.surfaceBright }}
+        >
           <Text variant="labelMedium" style={{ color: colors.secondary }}>
             Monthly Estimate
           </Text>
@@ -78,7 +70,10 @@ export default function Estimate() {
             ~2,159 Baht
           </Text>
         </View>
-        <View style={[styles.month, { backgroundColor: colors.surfaceBright }]}>
+        <View
+          className="flex-1 flex-wrap gap-1 rounded-xl p-3"
+          style={{ backgroundColor: colors.surfaceBright }}
+        >
           <Text variant="labelMedium" style={{ color: colors.secondary }}>
             CO2 Footprint
           </Text>
@@ -97,34 +92,6 @@ export default function Estimate() {
       >
         View Full Report
       </Button>
-    </View>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  usage: {
-    width: "100%",
-    padding: 20,
-    borderRadius: 15,
-    backgroundColor: theme.light.colors.surfaceContainer,
-    alignSelf: "center",
-    borderWidth: 1,
-  },
-  month: {
-    padding: 12,
-    gap: 4,
-    justifyContent: "flex-start",
-    backgroundColor: theme.light.colors.surfaceBright,
-    borderRadius: 15,
-    flexWrap: "wrap",
-    minWidth: 0,
-    flexGrow: 1,
-  },
-  rows: {
-    justifyContent: "center",
-    flexDirection: "row",
-    marginVertical: 10,
-    gap: 8,
-    width: "100%",
-  },
-});
