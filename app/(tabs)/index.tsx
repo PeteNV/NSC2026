@@ -13,8 +13,12 @@ export default function HomeScreen() {
 
   return (
     <View
-      className="flex-1 pb-4"
-      style={{ backgroundColor: colors.background, paddingTop: insets.top }}
+      className="flex-1"
+      style={{
+        backgroundColor: colors.background,
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }}
     >
       <View className="flex-1 gap-4 px-4">
         {/* Energy Estimation Summary Card */}
