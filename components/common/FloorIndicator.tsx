@@ -1,5 +1,6 @@
 import Button from "@/components/wrapper/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { StylableFC } from "@/types/common";
 import React, { useState } from "react";
 import { View } from "react-native";
 
@@ -8,7 +9,9 @@ import { View } from "react-native";
  * @param floorCount The number of floor to display
  * @returns
  */
-const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
+const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
+  floorCount = 1,
+}) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
 
