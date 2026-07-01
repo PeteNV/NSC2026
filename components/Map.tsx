@@ -1,3 +1,4 @@
+import FloorIndicator from "@/components/subcomponents/FloorIndicator";
 import { useTheme } from "@/hooks/useTheme";
 import { StylableFC } from "@/types/common";
 import React from "react";
@@ -21,16 +22,16 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
 const Map: StylableFC = () => {
   const { colors } = useTheme();
   return (
-    <View
-      className="h-full w-full min-w-0 flex-1 flex-shrink-0 flex-wrap
-        content-center justify-center rounded-lg border-2"
-    >
-      <Text
-        variant="labelLarge"
-        style={{ textAlign: "center", color: colors.secondary }}
-      >
-        Insert Map Here
-      </Text>
+    <View className="relative flex-1 rounded-lg">
+      <FloorIndicator floorCount={4} className="absolute w-full p-4" />
+      <View className="flex-1 content-center justify-center">
+        <Text
+          variant="labelLarge"
+          style={{ textAlign: "center", color: colors.secondary }}
+        >
+          Insert Map Here
+        </Text>
+      </View>
     </View>
   );
 };

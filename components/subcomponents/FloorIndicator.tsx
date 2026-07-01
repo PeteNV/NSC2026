@@ -1,6 +1,7 @@
 import Button from "@/components/wrapper/Button";
 import { useTheme } from "@/hooks/useTheme";
 import { StylableFC } from "@/types/common";
+import clsx from "clsx";
 import React, { useState } from "react";
 import { View } from "react-native";
 
@@ -11,6 +12,8 @@ import { View } from "react-native";
  */
 const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
   floorCount = 1,
+  className,
+  style,
 }) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
@@ -18,15 +21,18 @@ const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
   if (floorCount <= 1) return null;
 
   return (
-    <View className="flex-row justify-center gap-1">
+    <View
+      className={clsx("flex-row justify-center gap-1", className)}
+      style={style}
+    >
       {Array.from({ length: floorCount }, (_, i) => i + 1).map(
         (floor, index) => {
           const isSelected = floor === selectedFloor;
 
           let borderRadius: number = 4;
           if (isSelected) borderRadius = 9999;
-          else if (index === 0) borderRadius = 16;
-          else if (index === floorCount - 1) borderRadius = 16;
+          else if (index === 0) borderRadius = 9999;
+          else if (index === floorCount - 1) borderRadius = 9999;
 
           let borderTopRightRadius = borderRadius;
           let borderBottomRightRadius = borderRadius;
@@ -37,11 +43,11 @@ const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
             if (index === 0) {
               borderTopRightRadius = 4;
               borderBottomRightRadius = 4;
-              borderTopLeftRadius = 16;
-              borderBottomLeftRadius = 16;
+              borderTopLeftRadius = 9999;
+              borderBottomLeftRadius = 9999;
             } else if (index === floorCount - 1) {
-              borderTopRightRadius = 16;
-              borderBottomRightRadius = 16;
+              borderTopRightRadius = 9999;
+              borderBottomRightRadius = 9999;
               borderTopLeftRadius = 4;
               borderBottomLeftRadius = 4;
             }
