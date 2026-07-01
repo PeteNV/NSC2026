@@ -3,6 +3,11 @@ import { useTheme } from "@/hooks/useTheme";
 import React, { useState } from "react";
 import { View } from "react-native";
 
+/**
+ * A indicator that show the currently selected floor and allow user to switch it
+ * @param floorCount The number of floor to display
+ * @returns
+ */
 const FloorIndicator = ({ floorCount = 1 }: { floorCount?: number }) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
