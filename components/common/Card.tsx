@@ -13,7 +13,7 @@ const Card: StylableFC<PropsWithChildren> = ({
 
   return (
     <View
-      className={clsx(className, "w-full gap-4 rounded-xl p-4")}
+      className={clsx(className, "w-full gap-4 rounded-xl border p-4")}
       style={[
         style,
         { backgroundColor: colors.surface, borderColor: colors.outlineVariant },
