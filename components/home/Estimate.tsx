@@ -7,7 +7,7 @@ import { Button, Text } from "react-native-paper";
 export default function Estimate() {
   const { colors } = useTheme();
   return (
-    <Card>
+    <Card style={{ backgroundColor: colors.surfaceContainer }}>
       <Text variant="titleSmall" style={{ color: colors.onSurface }}>
         Usage
       </Text>
