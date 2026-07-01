@@ -1,10 +1,10 @@
-import FloorIndicator from "@/components/common/FloorIndicator";
-import Map from "@/components/common/Map";
+import Map from "@/components/Map";
+import Card from "@/components/common/Card";
 import Estimate from "@/components/home/Estimate";
+import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { StyleSheet, View } from "react-native";
-import { Card, FAB } from "react-native-paper";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -13,58 +13,24 @@ export default function HomeScreen() {
 
   return (
     <View
-      style={[
-        styles.wrapper,
-        { backgroundColor: colors.background, paddingTop: insets.top },
-      ]}
+      className="flex-1 pb-4"
+      style={{ backgroundColor: colors.background, paddingTop: insets.top }}
     >
-      <View style={[styles.container]}>
+      <View className="flex-1 gap-4 px-4">
+        {/* Energy Estimation Summary Card */}
         <Estimate />
-        <Card
-          style={[
-            styles.card,
-            styles.cardFlex,
-            {
-              borderColor: colors.outlineVariant,
-              backgroundColor: colors.surface,
-            },
-          ]}
-        >
-          <Card.Content style={styles.cardContent}>
-            <FloorIndicator floorCount={4} />
-            <Map />
-            <View className="flex-row justify-center">
-              <FAB
-                icon={({ size, color }) => (
-                  <MaterialIcons name="edit" size={size} color={color} />
-                )}
-              />
-            </View>
-          </Card.Content>
+
+        {/* Map */}
+        <Card className="relative flex-1 !p-0">
+          <Map />
+          <FAB
+            className="absolute bottom-4 right-4"
+            icon={({ size, color }) => (
+              <MaterialIcons name="edit" size={size} color={color} />
+            )}
+          />
         </Card>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    gap: 16,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  card: {
-    borderWidth: 1,
-  },
-  cardFlex: {
-    flex: 1,
-  },
-  cardContent: {
-    flex: 1,
-    gap: 16,
-  },
-});
