@@ -1,5 +1,6 @@
 import Card from "@/components/common/Card";
 import { useTheme } from "@/hooks/useTheme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
@@ -8,7 +9,7 @@ export default function Estimate() {
   const { colors } = useTheme();
   return (
     <Card style={{ backgroundColor: colors.surfaceContainer }}>
-      <Text variant="titleSmall" style={{ color: colors.onSurface }}>
+      <Text variant="titleSmall" style={{ color: colors.onSurfaceVariant }}>
         Usage
       </Text>
       <Text
@@ -49,10 +50,10 @@ export default function Estimate() {
         </Text>
       </Text>
       <View
-        className="mx-2 border-b"
+        className="-mx-4 border-b"
         style={{
           backgroundColor: colors.surfaceContainer,
-          borderBottomColor: colors.outline,
+          borderBottomColor: colors.outlineVariant,
         }}
       />
       <View className="w-full flex-row justify-center gap-2">
@@ -86,7 +87,9 @@ export default function Estimate() {
         </View>
       </View>
       <Button
-        icon={"camera"}
+        icon={({ size, color }) => (
+          <MaterialIcons name="search" size={size} color={color} />
+        )}
         mode="contained"
         onPress={() => alert("Button pressed")}
       >
