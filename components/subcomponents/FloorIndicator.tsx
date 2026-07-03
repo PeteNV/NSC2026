@@ -10,13 +10,25 @@ import { View } from "react-native";
  * @param floorCount The number of floor to display
  * @returns
  */
-const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
+const FloorIndicator: StylableFC<{
+  floorCount?: number;
+  selectedFloor?: number;
+  onFloorChange?: (floor: number) => void;
+}> = ({
   floorCount = 1,
+  selectedFloor: selectedFloorProp,
+  onFloorChange,
   className,
   style,
 }) => {
   const { colors } = useTheme();
-  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [selectedFloorInternal, setSelectedFloorInternal] = useState(1);
+  const selectedFloor = selectedFloorProp ?? selectedFloorInternal;
+
+  const handleFloorChange = (floor: number) => {
+    setSelectedFloorInternal(floor);
+    onFloorChange?.(floor);
+  };
 
   if (floorCount <= 1) return null;
 
@@ -57,7 +69,7 @@ const FloorIndicator: StylableFC<{ floorCount?: number }> = ({
             <Button
               key={floor}
               mode="contained"
-              onPress={() => setSelectedFloor(floor)}
+              onPress={() => handleFloorChange(floor)}
               buttonColor={
                 isSelected ? colors.secondary : colors.secondaryContainer
               }
