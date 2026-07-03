@@ -17,7 +17,7 @@ export default function HomeScreen() {
       style={{
         backgroundColor: colors.background,
         paddingTop: insets.top,
-        paddingBottom: insets.bottom,
+        paddingBottom: insets.bottom + 16,
       }}
     >
       <View className="flex-1 gap-4 px-4">
