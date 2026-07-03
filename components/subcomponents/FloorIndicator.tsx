@@ -34,7 +34,7 @@ const FloorIndicator: StylableFC<{
 
   return (
     <View
-      className={clsx("flex-row justify-center gap-1", className)}
+      className={clsx("flex-row justify-center gap-0.5", className)}
       style={style}
     >
       {Array.from({ length: floorCount }, (_, i) => i + 1).map(
