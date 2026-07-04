@@ -13,7 +13,7 @@ export type DropdownItem = {
   onPress: () => void;
 };
 
-const DROPDOWN_WIDTH = 36;
+const DROPDOWN_WIDTH = 48;
 
 const ButtonWithDropdown: StylableFC<{
   mode?: "contained" | "outlined" | "text" | "elevated" | "contained-tonal";
