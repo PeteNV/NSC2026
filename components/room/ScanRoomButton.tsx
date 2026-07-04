@@ -2,6 +2,7 @@ import ButtonWithDropdown, {
   DropdownItem,
 } from "@/components/common/ButtonWithDropdown";
 import { StylableFC } from "@/types/common";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 type Props = {
   onScanRoom: () => void;
@@ -31,7 +32,9 @@ const ScanRoomButton: StylableFC<Props> = ({
       mode="contained"
       disabled={disabled}
       loading={loading}
-      icon="camera"
+      icon={({ size, color }) => (
+        <MaterialIcons name="add" size={size} color={color} />
+      )}
       onPress={onScanRoom}
       dropdownItems={dropdownItems}
       className={className}

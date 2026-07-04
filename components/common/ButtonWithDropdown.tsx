@@ -17,7 +17,7 @@ type Props = {
   mode?: "contained" | "outlined" | "text" | "elevated" | "contained-tonal";
   disabled?: boolean;
   loading?: boolean;
-  icon?: string;
+  icon?: string | ((props: { size: number; color: string }) => React.ReactNode);
   buttonColor?: string;
   textColor?: string;
   dropdownItems: DropdownItem[];
