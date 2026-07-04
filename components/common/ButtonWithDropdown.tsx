@@ -72,8 +72,7 @@ const ButtonWithDropdown: StylableFC<{
         buttonColor={resolvedButtonColor}
         textColor={resolvedTextColor}
         onPress={onPress}
-        className="flex-1"
-        style={{ borderTopRightRadius: 4, borderBottomRightRadius: 4 }}
+        style={{ flex: 1, borderTopRightRadius: 4, borderBottomRightRadius: 4 }}
       >
         {children}
       </Button>
