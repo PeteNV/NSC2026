@@ -13,7 +13,7 @@ type Props = {
   loading?: boolean;
 };
 
-const DROPDOWN_WIDTH = 40;
+const DROPDOWN_WIDTH = 48;
 
 const ScanRoomButton: StylableFC<Props> = ({
   onScanRoom,
@@ -36,7 +36,12 @@ const ScanRoomButton: StylableFC<Props> = ({
           <MaterialIcons name="add" size={size} color={color} />
         )}
         onPress={onScanRoom}
-        style={{ flex: 1, borderTopRightRadius: 4, borderBottomRightRadius: 4 }}
+        style={{
+          flex: 1,
+          height: 40,
+          borderTopRightRadius: 4,
+          borderBottomRightRadius: 4,
+        }}
       >
         Scan Room
       </Button>
@@ -49,10 +54,10 @@ const ScanRoomButton: StylableFC<Props> = ({
             onPress={() => setMenuVisible(true)}
             style={{
               width: DROPDOWN_WIDTH,
-              height: DROPDOWN_WIDTH,
+              height: 40,
               backgroundColor: colors.primary,
-              borderTopRightRadius: 9999,
-              borderBottomRightRadius: 9999,
+              borderTopRightRadius: 20,
+              borderBottomRightRadius: 20,
               borderTopLeftRadius: 4,
               borderBottomLeftRadius: 4,
               justifyContent: "center",
