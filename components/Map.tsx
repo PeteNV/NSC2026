@@ -19,17 +19,21 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
   );
 }
 
-const Map: StylableFC = () => {
+const Map: StylableFC<{ hideFloorIndicator?: boolean }> = ({
+  hideFloorIndicator = false,
+}) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
   return (
     <View className="relative flex-1 rounded-lg">
-      <FloorIndicator
-        floorCount={4}
-        selectedFloor={selectedFloor}
-        onFloorChange={setSelectedFloor}
-        className="absolute w-full p-4"
-      />
+      {!hideFloorIndicator && (
+        <FloorIndicator
+          floorCount={4}
+          selectedFloor={selectedFloor}
+          onFloorChange={setSelectedFloor}
+          className="absolute w-full p-4"
+        />
+      )}
       <View
         className="flex-1 content-center justify-center"
         pointerEvents="box-none"
