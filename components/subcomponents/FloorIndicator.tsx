@@ -55,11 +55,11 @@ const FloorIndicator: StylableFC<{
             if (index === 0) {
               borderTopRightRadius = 4;
               borderBottomRightRadius = 4;
-              borderTopLeftRadius = 9999;
-              borderBottomLeftRadius = 9999;
+              borderTopLeftRadius = 19;
+              borderBottomLeftRadius = 19;
             } else if (index === floorCount - 1) {
-              borderTopRightRadius = 9999;
-              borderBottomRightRadius = 9999;
+              borderTopRightRadius = 19;
+              borderBottomRightRadius = 19;
               borderTopLeftRadius = 4;
               borderBottomLeftRadius = 4;
             }
