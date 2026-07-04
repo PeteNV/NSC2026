@@ -1,10 +1,9 @@
 import { useTheme } from "@/hooks/useTheme";
 import { type StylableFC } from "@/types/common";
 import { clsx } from "clsx";
-import type { PropsWithChildren } from "react";
 import { View } from "react-native";
 
-const Card: StylableFC<PropsWithChildren> = ({
+const Card: StylableFC<{ children: React.ReactNode }> = ({
   className,
   style,
   children,

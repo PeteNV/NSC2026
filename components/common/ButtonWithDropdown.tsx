@@ -13,7 +13,9 @@ export type DropdownItem = {
   onPress: () => void;
 };
 
-type Props = {
+const DROPDOWN_WIDTH = 36;
+
+const ButtonWithDropdown: StylableFC<{
   mode?: "contained" | "outlined" | "text" | "elevated" | "contained-tonal";
   disabled?: boolean;
   loading?: boolean;
@@ -23,11 +25,7 @@ type Props = {
   dropdownItems: DropdownItem[];
   onPress: () => void;
   children: string;
-};
-
-const DROPDOWN_WIDTH = 36;
-
-const ButtonWithDropdown: StylableFC<Props> = ({
+}> = ({
   mode = "contained",
   disabled = false,
   loading = false,
