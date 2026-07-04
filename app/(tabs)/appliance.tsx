@@ -23,7 +23,7 @@ const MOCK_APPLIANCES: ApplianceData[] = [
   { id: "10", name: "Clothes Dryer", usage: 2, power: 1800 },
 ];
 
-export default function RoomEditScreen() {
+export default function RoomApplianceScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
