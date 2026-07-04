@@ -74,7 +74,8 @@ const ButtonWithDropdown: StylableFC<Props> = ({
         buttonColor={resolvedButtonColor}
         textColor={resolvedTextColor}
         onPress={onPress}
-        className="flex-1 !rounded-r"
+        className="flex-1"
+        style={{ borderTopRightRadius: 4, borderBottomRightRadius: 4 }}
       >
         {children}
       </Button>
@@ -105,7 +106,7 @@ const ButtonWithDropdown: StylableFC<Props> = ({
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={menuAnchor}
-        className="rounded-lg"
+        className="mt-2 rounded-lg"
         classNameContent="min-w-40 p-0 overflow-hidden"
         contentStyle={{ borderRadius: 16 }}
       >
@@ -117,7 +118,7 @@ const ButtonWithDropdown: StylableFC<Props> = ({
           {dropdownItems.map((item, index) => (
             <Menu.Item
               key={index}
-              style={{ backgroundColor: colors.surfaceContainerLow }}
+              style={{ backgroundColor: colors.surfaceContainerHigh }}
               leadingIcon={item.leadingIcon}
               onPress={() => {
                 setMenuVisible(false);

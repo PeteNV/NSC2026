@@ -23,11 +23,7 @@ export default function RoomEditScreen() {
         <Card className="relative h-1/2 !p-0">
           <Map />
         </Card>
-        <ScanRoomButton
-          onScanRoom={() => {}}
-          onManualEntry={() => {}}
-          className="mx-4"
-        />
+        <ScanRoomButton onScanRoom={() => {}} onManualEntry={() => {}} />
       </View>
     </View>
   );
