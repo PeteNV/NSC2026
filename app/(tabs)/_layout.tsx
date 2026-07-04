@@ -9,23 +9,23 @@ export default function TabLayout() {
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house" md="home" />
+        <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="room">
-        <NativeTabs.Trigger.Icon sf="door.left.hand.open" md="door_sliding" />
+        <NativeTabs.Trigger.Icon sf={{ default: "door.left.hand.open", selected: "door.left.hand.closed" }} md="door_sliding" />
         <NativeTabs.Trigger.Label>Room</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="appliance">
-        <NativeTabs.Trigger.Icon sf="cooktop" md="microwave" />
+        <NativeTabs.Trigger.Icon sf={{ default: "cooktop", selected: "cooktop.fill" }} md="microwave" />
         <NativeTabs.Trigger.Label>Appliance</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="report">
-        <NativeTabs.Trigger.Icon sf="chart.bar" md="assessment" />
+        <NativeTabs.Trigger.Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} md="assessment" />
         <NativeTabs.Trigger.Label>Report</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="scanner-test">
         <NativeTabs.Trigger.Label>Scanner Test</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="qrcode" md="scanner" />
+        <NativeTabs.Trigger.Icon sf={{ default: "qrcode", selected: "qrcode.viewfinder" }} md="scanner" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
