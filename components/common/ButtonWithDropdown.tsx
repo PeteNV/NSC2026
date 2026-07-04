@@ -108,7 +108,7 @@ const ButtonWithDropdown: StylableFC<Props> = ({
         anchor={menuAnchor}
         className="mt-2 rounded-lg"
         classNameContent="min-w-40 p-0 overflow-hidden"
-        contentStyle={{ borderRadius: 16 }}
+        contentStyle={{ borderRadius: 16, transformOrigin: "top right" }}
       >
         <View
           onLayout={(e) => {
