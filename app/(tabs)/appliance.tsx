@@ -4,10 +4,11 @@ import Map from "@/components/Map";
 import ApplianceListItem, {
   ApplianceData,
 } from "@/components/room/ApplianceListItem";
+import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { View } from "react-native";
-import { FAB, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MOCK_APPLIANCES: ApplianceData[] = [

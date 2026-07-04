@@ -1,10 +1,10 @@
 import Map from "@/components/Map";
 import Card from "@/components/common/Card";
 import Estimate from "@/components/home/Estimate";
+import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { View } from "react-native";
-import { FAB } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
