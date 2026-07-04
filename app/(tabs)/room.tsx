@@ -31,8 +31,8 @@ export default function RoomEditScreen() {
       }}
     >
       {/* Map */}
-      <View className="h-1/2 gap-4 px-4">
-        <Card className="flex-1 !p-0">
+      <View className="gap-4 px-4" style={{ flex: 0.7 }}>
+        <Card className="!p-0" style={{ flex: 1 }}>
           <Map />
         </Card>
         <ScanRoomButton onScanRoom={() => {}} onManualEntry={() => {}} />
@@ -40,8 +40,9 @@ export default function RoomEditScreen() {
 
       {/* Room List */}
       <View
-        className="h-1/2 rounded-t-[54] px-3 outline outline-1"
+        className="rounded-t-[54] px-3 outline outline-1"
         style={{
+          flex: 0.3,
           backgroundColor: colors.surfaceContainer,
           outlineColor: colors.outlineVariant,
         }}
