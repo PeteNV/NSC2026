@@ -5,19 +5,17 @@ import clsx from "clsx";
 import { View } from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
 
-export type RoomData = {
+export type ApplianceData = {
   id: string;
   name: string;
-  applianceCount: number;
+  usage: number;
   power: number;
 };
 
-const RoomListItem: StylableFC<{ room: RoomData; onPress?: () => void }> = ({
-  room,
-  onPress,
-  className,
-  style,
-}) => {
+const ApplianceListItem: StylableFC<{
+  room: ApplianceData;
+  onPress?: () => void;
+}> = ({ room, onPress, className, style }) => {
   const { colors } = useTheme();
 
   return (
@@ -38,10 +36,13 @@ const RoomListItem: StylableFC<{ room: RoomData; onPress?: () => void }> = ({
         <View className="flex-1 flex-col">
           <Text variant="bodyLarge">{room.name}</Text>
           <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
-            {room.applianceCount} appliances {"•"} {room.power} kWh
+            {room.usage} h {"•"} {room.power} Wh
           </Text>
         </View>
-        <View>
+        <View className="flex-row gap-4">
+          <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
+            {(room.power * room.usage) / 1000} kWh
+          </Text>
           <MaterialIcons
             name="more-horiz"
             size={24}
@@ -53,4 +54,4 @@ const RoomListItem: StylableFC<{ room: RoomData; onPress?: () => void }> = ({
   );
 };
 
-export default RoomListItem;
+export default ApplianceListItem;

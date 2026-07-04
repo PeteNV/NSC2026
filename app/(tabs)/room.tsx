@@ -30,15 +30,15 @@ export default function RoomEditScreen() {
         paddingBottom: insets.bottom + 16,
       }}
     >
+      {/* Map */}
       <View className="h-1/2 gap-4 px-4">
-        {/* Map */}
         <Card className="flex-1 !p-0">
           <Map />
         </Card>
         <ScanRoomButton onScanRoom={() => {}} onManualEntry={() => {}} />
       </View>
 
-      {/* Appliance List */}
+      {/* Room List */}
       <View
         className="h-1/2 rounded-t-[54] px-3 outline outline-1"
         style={{

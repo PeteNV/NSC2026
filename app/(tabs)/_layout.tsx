@@ -15,6 +15,10 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf="paperplane.fill" md="explore" />
         <NativeTabs.Trigger.Label>Room</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="appliance">
+        <NativeTabs.Trigger.Icon sf="paperplane.fill" md="explore" />
+        <NativeTabs.Trigger.Label>Appliance</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="scanner-test">
         <NativeTabs.Trigger.Label>Scanner Test</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="qrcode" md="scanner" />
