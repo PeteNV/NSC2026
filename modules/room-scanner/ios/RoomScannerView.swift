@@ -11,11 +11,11 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
     private var roomCaptureView: RoomCaptureView?
     private let roomCaptureSessionConfig = RoomCaptureSession.Configuration()
     private var yoloDetector: YOLODetector?
+    private var yoloTracker = YOLOTracker()
     private var frameCounter = 0
     private let detectionFrameInterval = 15
     private let detectionOverlayView = UIView()
     private var lastLoggedDetectionDate = Date.distantPast
-    private var lastHadDetections = false
 
     let onScanComplete = EventDispatcher()
     let onObjectDetected = EventDispatcher()
@@ -57,12 +57,9 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
             let hasDetections = self.renderDetections(from: jsonPayload)
             self.logDetections(from: jsonPayload, hasDetections: hasDetections)
 
-            // Emits empty payloads after detections disappear so JavaScript can clear stale UI state.
-            if hasDetections || self.lastHadDetections {
-                self.onObjectDetected(jsonPayload)
+            if hasDetections, let detections = jsonPayload["detections"] as? [[String: Any]] {
+                self.yoloTracker.processDetections(detections)
             }
-
-            self.lastHadDetections = hasDetections
         }
     }
 
@@ -183,12 +180,11 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
 
     func setScanning(_ scanning: Bool) {
         if scanning {
+            yoloTracker.reset()
             roomCaptureView?.captureSession.run(configuration: roomCaptureSessionConfig)
         } else {
-            // Resets transient detector state when scanning stops so the next session starts cleanly.
             roomCaptureView?.captureSession.stop()
             detectionOverlayView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-            lastHadDetections = false
         }
     }
 
@@ -197,7 +193,6 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
     }
 
     public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {
-        // Flattens RoomPlan output into Expo dictionaries before emitting completion.
         let walls = processedResult.walls.map { wall -> [String: Any] in
             return [
                 "id": wall.identifier.uuidString,
@@ -228,14 +223,68 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
             ]
         }
 
+        let doors = processedResult.doors.map { door -> [String: Any] in
+            return [
+                "id": door.identifier.uuidString,
+                "category": "\(door.category)",
+                "dimensions": [
+                    "x": door.dimensions.x,
+                    "y": door.dimensions.y,
+                    "z": door.dimensions.z
+                ],
+                "confidence": "\(door.confidence)",
+                "position": [
+                    "x": door.transform.columns.3.x,
+                    "y": door.transform.columns.3.y,
+                    "z": door.transform.columns.3.z
+                ]
+            ]
+        }
+
+        let windows = processedResult.windows.map { window -> [String: Any] in
+            return [
+                "id": window.identifier.uuidString,
+                "category": "\(window.category)",
+                "dimensions": [
+                    "x": window.dimensions.x,
+                    "y": window.dimensions.y,
+                    "z": window.dimensions.z
+                ],
+                "confidence": "\(window.confidence)",
+                "position": [
+                    "x": window.transform.columns.3.x,
+                    "y": window.transform.columns.3.y,
+                    "z": window.transform.columns.3.z
+                ]
+            ]
+        }
+
+        let yoloDetections = yoloTracker.uniqueDetections
+
+        var mergedAppliances: [[String: Any]] = appliances.map { dict in
+            var item = dict
+            item["source"] = "roomplan"
+            return item
+        }
+
+        for yolo in yoloDetections {
+            var item = yolo
+            item["id"] = UUID().uuidString
+            item["source"] = "yolo"
+            mergedAppliances.append(item)
+        }
+
         onScanComplete([
-            "appliances": appliances,
+            "appliances": mergedAppliances,
             "walls": walls,
+            "doors": doors,
+            "windows": windows,
             "timestamp": Date().timeIntervalSince1970,
             "metadata": [
                 "wallCount": processedResult.walls.count,
                 "doorCount": processedResult.doors.count,
-                "windowCount": processedResult.windows.count
+                "windowCount": processedResult.windows.count,
+                "applianceCount": mergedAppliances.count
             ]
         ])
     }
