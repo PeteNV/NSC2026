@@ -1,12 +1,26 @@
 import { ViewProps } from "react-native";
 
-export type ApplianceData = {
+export type RoomPlanObject = {
   id: string;
   category: string;
   dimensions: { x: number; y: number; z: number };
   confidence: string;
   position: { x: number; y: number; z: number };
+  source: "roomplan";
 };
+
+export type YOLOAppliance = {
+  id: string;
+  label: string;
+  confidence: number;
+  boundingBox: { x: number; y: number; width: number; height: number };
+  firstSeen: number;
+  lastSeen: number;
+  frameCount: number;
+  source: "yolo";
+};
+
+export type ApplianceData = RoomPlanObject | YOLOAppliance;
 
 export type WallData = {
   id: string;
@@ -16,21 +30,25 @@ export type WallData = {
   rotation: number;
 };
 
-// Matches JSON output from Swift
+export type DoorWindowData = RoomPlanObject;
+
+export type ScanResult = {
+  appliances: ApplianceData[];
+  walls: WallData[];
+  doors: DoorWindowData[];
+  windows: DoorWindowData[];
+  timestamp: number;
+  metadata: {
+    wallCount: number;
+    doorCount: number;
+    windowCount: number;
+    applianceCount: number;
+  };
+};
+
 export type RoomScannerProps = {
   isScanning?: boolean;
-  onScanComplete?: (event: {
-    nativeEvent: {
-      appliances: ApplianceData[];
-      walls: WallData[];
-      timestamp: number;
-      metadata: {
-        wallCount: number;
-        doorCount: number;
-        windowCount: number;
-      };
-    };
-  }) => void;
+  onScanComplete?: (event: { nativeEvent: ScanResult }) => void;
 } & ViewProps;
 
 export type YOLODetection = {
@@ -41,16 +59,6 @@ export type YOLODetection = {
     y: number;
     width: number;
     height: number;
-  };
-};
-
-export type ScanResult = {
-  appliances: any[];
-  walls: any[];
-  metadata: {
-    wallCount: number;
-    doorCount: number;
-    windowCount: number;
   };
 };
 

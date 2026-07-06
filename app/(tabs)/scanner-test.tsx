@@ -22,12 +22,15 @@ import RoomScannerView, {
     isRoomScannerViewAvailable,
     roomScannerNativeViewName,
 } from "../../modules/room-scanner/src/RoomScannerView";
+import type { ScanResult } from "../../modules/room-scanner/src/RoomScanner.types";
+
+const Clipboard = NativeModules.Clipboard;
 
 export default function ScannerTest() {
   const insets = useSafeAreaInsets();
   const [isScanning, setIsScanning] = useState(false);
-  const [scanData, setScanData] = useState<any>(null);
-  const [yoloData, setYoloData] = useState<any>(null);
+  const [scanData, setScanData] = useState<ScanResult | null>(null);
+  const [copied, setCopied] = useState(false);
   const nativeUnimoduleProxy = NativeModules.NativeUnimoduleProxy;
   const moduleConstants =
     nativeUnimoduleProxy?.modulesConstants?.RoomScanner ??
@@ -42,6 +45,16 @@ export default function ScannerTest() {
   const isSupported =
     (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
 
+  const handleCopy = () => {
+    if (!scanData) return;
+    const json = JSON.stringify(scanData, null, 2);
+    if (Clipboard?.setString) {
+      Clipboard.setString(json);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.scannerContainer}>
@@ -49,10 +62,6 @@ export default function ScannerTest() {
           <RoomScannerView
             style={{ flex: 1 }}
             scanning={isScanning}
-            onObjectDetected={(event) => {
-              console.log("YOLO Detections:", event.nativeEvent);
-              setYoloData(event.nativeEvent);
-            }}
             onScanComplete={(event) => {
               console.log("Scan Data Received:", event.nativeEvent);
               setScanData(event.nativeEvent);
@@ -104,13 +113,15 @@ export default function ScannerTest() {
         />
 
         <ScrollView style={styles.results}>
-          <Text style={styles.title}>YOLO Detections:</Text>
-          <Text>
-            {yoloData
-              ? JSON.stringify(yoloData, null, 2)
-              : "No detections yet..."}
-          </Text>
-          <Text style={styles.sectionTitle}>RoomPlan Results:</Text>
+          <View style={styles.resultHeader}>
+            <Text style={styles.title}>Scan Result:</Text>
+            {scanData && (
+              <Button
+                title={copied ? "Copied!" : "Copy JSON"}
+                onPress={handleCopy}
+              />
+            )}
+          </View>
           <Text>
             {scanData ? JSON.stringify(scanData, null, 2) : "No data yet..."}
           </Text>
@@ -153,6 +164,12 @@ const styles = StyleSheet.create({
   debugTitle: { fontWeight: "700", marginBottom: 4 },
   debugLine: { fontSize: 12, color: "#333" },
   results: { marginTop: 10, backgroundColor: "#f4f4f4", padding: 10 },
-  title: { fontWeight: "bold", marginBottom: 5 },
+  resultHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  title: { fontWeight: "bold" },
   sectionTitle: { fontWeight: "bold", marginTop: 16, marginBottom: 5 },
 });
