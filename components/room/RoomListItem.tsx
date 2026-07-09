@@ -2,8 +2,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
+import { router } from "expo-router";
+import { useState } from "react";
 import { View } from "react-native";
-import { Text, TouchableRipple } from "react-native-paper";
+import { Menu, Text, TouchableRipple } from "react-native-paper";
 
 export type RoomData = {
   id: string;
@@ -12,44 +14,86 @@ export type RoomData = {
   power: number;
 };
 
-const RoomListItem: StylableFC<{ room: RoomData; onPress?: () => void }> = ({
-  room,
-  onPress,
-  className,
-  style,
-}) => {
+const RoomListItem: StylableFC<{
+  room: RoomData;
+  onPress?: () => void;
+  onDelete?: () => void;
+}> = ({ room, onPress, onDelete, className, style }) => {
   const { colors } = useTheme();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   return (
-    <TouchableRipple
-      onPress={() => console.log("Pressed")}
-      className={clsx("rounded-xl", className)}
-      style={style}
+    <View
+      className={clsx("overflow-hidden rounded-xl", className)}
+      style={[{ backgroundColor: colors.surface }, style]}
     >
       <View
-        className="h-20 flex-row items-center justify-between gap-4 rounded
-          px-4"
-        style={{
-          backgroundColor: colors.surface,
-          borderColor: colors.outlineVariant,
-        }}
+        className="h-20 flex-row items-center rounded px-4"
+        style={{ borderColor: colors.outlineVariant }}
       >
-        <MaterialIcons name="bed" size={24} color={colors.onSurfaceVariant} />
-        <View className="flex-1 flex-col">
-          <Text variant="bodyLarge">{room.name}</Text>
-          <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
-            {room.applianceCount} appliances {"•"} {room.power} kWh
-          </Text>
-        </View>
-        <View>
-          <MaterialIcons
-            name="more-horiz"
-            size={24}
-            color={colors.onSurfaceVariant}
+        <TouchableRipple
+          onPress={() => router.push("/appliance")}
+          className="flex-1 flex-row items-center gap-4 py-4"
+        >
+          <>
+            <MaterialIcons
+              name="bed"
+              size={24}
+              color={colors.onSurfaceVariant}
+            />
+            <View className="flex-1 flex-col">
+              <Text variant="bodyLarge">{room.name}</Text>
+              <Text
+                variant="bodyMedium"
+                style={{ color: colors.onSurfaceVariant }}
+              >
+                {room.applianceCount} appliances {"•"} {room.power} kWh
+              </Text>
+            </View>
+          </>
+        </TouchableRipple>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          contentStyle={{ backgroundColor: colors.surfaceContainerHigh }}
+          anchor={
+            <TouchableRipple
+              onPress={() => setMenuVisible(true)}
+              borderless
+              style={{ borderRadius: 20 }}
+            >
+              <MaterialIcons
+                name="more-horiz"
+                size={24}
+                color={colors.onSurfaceVariant}
+              />
+            </TouchableRipple>
+          }
+        >
+          <Menu.Item
+            leadingIcon={({ size, color }) => (
+              <MaterialIcons name="edit" size={size} color={color} />
+            )}
+            onPress={() => {
+              router.push("/appliance");
+              setMenuVisible(false);
+            }}
+            title="Edit"
           />
-        </View>
+          <Menu.Item
+            leadingIcon={({ size }) => (
+              <MaterialIcons name="delete" size={size} color={colors.error} />
+            )}
+            onPress={() => {
+              setMenuVisible(false);
+              onDelete?.();
+            }}
+            title="Delete"
+            titleStyle={{ color: colors.error }}
+          />
+        </Menu>
       </View>
-    </TouchableRipple>
+    </View>
   );
 };
 
