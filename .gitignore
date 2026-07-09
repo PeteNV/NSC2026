@@ -61,6 +61,10 @@ test-results
 .branches
 .temp
 
+# scanner output
+backend/output/*
+!backend/output/.gitkeep
+
 # dotenvx
 .env.keys
 .env.local
