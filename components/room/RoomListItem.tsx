@@ -81,7 +81,7 @@ const RoomListItem: StylableFC<{
             )}
             onPress={() => {
               router.push({
-                pathname: "/appliance/[id]",
+                pathname: "/room/[id]",
                 params: { id: room.id },
               });
               setMenuVisible(false);
