@@ -32,7 +32,12 @@ const RoomListItem: StylableFC<{
         style={{ borderColor: colors.outlineVariant }}
       >
         <TouchableRipple
-          onPress={() => router.push("/appliance")}
+          onPress={() =>
+            router.push({
+              pathname: "/room/[id]",
+              params: { id: room.id },
+            })
+          }
           className="flex-1 flex-row items-center gap-4 py-4"
         >
           <>
@@ -75,7 +80,10 @@ const RoomListItem: StylableFC<{
               <MaterialIcons name="edit" size={size} color={color} />
             )}
             onPress={() => {
-              router.push("/appliance");
+              router.push({
+                pathname: "/appliance/[id]",
+                params: { id: room.id },
+              });
               setMenuVisible(false);
             }}
             title="Edit"

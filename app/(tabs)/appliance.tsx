@@ -1,12 +1,8 @@
-import Card from "@/components/common/Card";
 import List from "@/components/common/List";
-import Map from "@/components/Map";
 import ApplianceListItem, {
   ApplianceData,
 } from "@/components/room/ApplianceListItem";
-import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,41 +20,28 @@ const MOCK_APPLIANCES: ApplianceData[] = [
   { id: "10", name: "Clothes Dryer", usage: 2, power: 1800 },
 ];
 
-export default function RoomApplianceScreen() {
+export default function ApplianceScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+
   return (
     <View
-      className="flex-1 gap-4"
+      className="flex-1"
       style={{
         backgroundColor: colors.background,
         paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
-      {/* Map */}
-      <View className="flex-1 gap-4 px-4">
-        <Card className="flex-1 !p-0">
-          <Map hideFloorIndicator />
-          <FAB
-            className="absolute bottom-4 right-4"
-            icon={({ size, color }) => (
-              <MaterialIcons name="edit" size={size} color={color} />
-            )}
-          />
-        </Card>
-      </View>
-
-      {/* Appliance List */}
       <View
-        className="flex-1 rounded-t-[54] px-3 outline outline-1"
+        className="flex-1 px-4 outline outline-1"
         style={{
           backgroundColor: colors.surfaceContainer,
           outlineColor: colors.outlineVariant,
         }}
       >
         <Text variant="headlineSmall" className="px-9 py-5">
-          Appliance List
+          All Appliances
         </Text>
         <List
           data={MOCK_APPLIANCES}
