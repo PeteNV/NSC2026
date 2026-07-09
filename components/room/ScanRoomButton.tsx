@@ -27,7 +27,10 @@ const ScanRoomButton: StylableFC<Props> = ({
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
-    <View style={[{ flexDirection: "row", gap: 2 }, style]}>
+    <View
+      style={[{ flexDirection: "row", gap: 2 }, style]}
+      className={className}
+    >
       <Button
         mode="contained"
         disabled={disabled}
@@ -46,6 +49,8 @@ const ScanRoomButton: StylableFC<Props> = ({
         Scan Room
       </Button>
       <Menu
+        style={{ marginTop: 48 }}
+        contentStyle={{ backgroundColor: colors.surfaceContainerHigh }}
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
