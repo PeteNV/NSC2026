@@ -2,8 +2,9 @@ import { useTheme } from "@/hooks/useTheme";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
+import { useState } from "react";
 import { View } from "react-native";
-import { Text, TouchableRipple } from "react-native-paper";
+import { Menu, Text, TouchableRipple } from "react-native-paper";
 
 export type ApplianceData = {
   id: string;
@@ -15,8 +16,11 @@ export type ApplianceData = {
 const ApplianceListItem: StylableFC<{
   room: ApplianceData;
   onPress?: () => void;
-}> = ({ room, onPress, className, style }) => {
+  onEdit?: () => void;
+  onDelete?: () => void;
+}> = ({ room, onPress, onEdit, onDelete, className, style }) => {
   const { colors } = useTheme();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   return (
     <TouchableRipple
@@ -39,15 +43,52 @@ const ApplianceListItem: StylableFC<{
             {room.usage} h {"•"} {room.power} Wh
           </Text>
         </View>
-        <View className="flex-row gap-4">
+        <View className="flex-row items-center gap-4">
           <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
             {(room.power * room.usage) / 1000} kWh
           </Text>
-          <MaterialIcons
-            name="more-horiz"
-            size={24}
-            color={colors.onSurfaceVariant}
-          />
+          <Menu
+            style={{ padding: 32 }}
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            contentStyle={{ backgroundColor: colors.surfaceContainerHigh }}
+            anchor={
+              <TouchableRipple
+                onPress={() => setMenuVisible(true)}
+                borderless
+                style={{ borderRadius: 20 }}
+              >
+                <MaterialIcons
+                  name="more-horiz"
+                  size={24}
+                  color={colors.onSurfaceVariant}
+                  className="p-2"
+                />
+              </TouchableRipple>
+            }
+          >
+            <Menu.Item
+              leadingIcon={({ size, color }) => (
+                <MaterialIcons name="edit" size={size} color={color} />
+              )}
+              onPress={() => {
+                setMenuVisible(false);
+                onEdit?.();
+              }}
+              title="Edit"
+            />
+            <Menu.Item
+              leadingIcon={({ size }) => (
+                <MaterialIcons name="delete" size={size} color={colors.error} />
+              )}
+              onPress={() => {
+                setMenuVisible(false);
+                onDelete?.();
+              }}
+              title="Delete"
+              titleStyle={{ color: colors.error }}
+            />
+          </Menu>
         </View>
       </View>
     </TouchableRipple>
