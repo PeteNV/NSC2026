@@ -4,7 +4,7 @@ import { StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
 import { View } from "react-native";
-import { Icon, Menu, TouchableRipple } from "react-native-paper";
+import { Menu, TouchableRipple } from "react-native-paper";
 
 type Props = {
   onScanRoom: () => void;
@@ -69,12 +69,14 @@ const ScanRoomButton: StylableFC<Props> = ({
               alignItems: "center",
             }}
           >
-            <Icon source="chevron-down" size={18} color={colors.onPrimary} />
+            <MaterialIcons name="expand-more" size={18} color={colors.onPrimary} />
           </TouchableRipple>
         }
       >
         <Menu.Item
-          leadingIcon="pencil"
+          leadingIcon={({ size, color }) => (
+            <MaterialIcons name="edit" size={size} color={color} />
+          )}
           onPress={() => {
             setMenuVisible(false);
             onManualEntry();
