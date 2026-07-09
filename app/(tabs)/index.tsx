@@ -4,6 +4,7 @@ import Estimate from "@/components/home/Estimate";
 import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { router } from "expo-router";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -32,6 +33,7 @@ export default function HomeScreen() {
             icon={({ size, color }) => (
               <MaterialIcons name="edit" size={size} color={color} />
             )}
+            onPress={() => router.push("/room")}
           />
         </Card>
       </View>
