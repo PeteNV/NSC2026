@@ -31,7 +31,7 @@ export default function RoomEditScreen() {
       }}
     >
       {/* Map */}
-      <View className="gap-4 px-4" style={{ flex: 0.7 }}>
+      <View className="gap-4 px-4" style={{ flex: 0.6 }}>
         <Card className="!p-0" style={{ flex: 1 }}>
           <Map />
         </Card>
@@ -42,7 +42,7 @@ export default function RoomEditScreen() {
       <View
         className="rounded-t-[54] px-3 outline outline-1"
         style={{
-          flex: 0.3,
+          flex: 0.4,
           backgroundColor: colors.surfaceContainer,
           outlineColor: colors.outlineVariant,
         }}
