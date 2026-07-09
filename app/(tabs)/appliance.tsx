@@ -37,7 +37,7 @@ export default function RoomApplianceScreen() {
       }}
     >
       {/* Map */}
-      <View className="h-2/5 gap-4 px-4">
+      <View className="flex-1 gap-4 px-4">
         <Card className="flex-1 !p-0">
           <Map hideFloorIndicator />
           <FAB
@@ -51,7 +51,7 @@ export default function RoomApplianceScreen() {
 
       {/* Appliance List */}
       <View
-        className="h-3/5 rounded-t-[54] px-3 outline outline-1"
+        className="flex-1 rounded-t-[54] px-3 outline outline-1"
         style={{
           backgroundColor: colors.surfaceContainer,
           outlineColor: colors.outlineVariant,
