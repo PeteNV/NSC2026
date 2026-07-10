@@ -174,7 +174,13 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
 
         // Samples every Nth AR frame so RoomPlan remains responsive while detection runs in parallel.
         if frameCounter % detectionFrameInterval == 0, let yoloDetector, yoloDetector.isReadyForNextFrame {
-            yoloDetector.processFrame(frame.capturedImage)
+            let context = YOLODetector.FrameContext(
+                cameraTransform: frame.camera.transform,
+                intrinsics: frame.camera.intrinsics,
+                imageResolution: frame.camera.imageResolution,
+                depthMap: frame.sceneDepth?.depthMap ?? frame.smoothedSceneDepth?.depthMap
+            )
+            yoloDetector.processFrame(frame.capturedImage, context: context)
         }
     }
 

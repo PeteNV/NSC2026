@@ -14,9 +14,22 @@ import Vision
 import ARKit
 
 class YOLODetector {
+    // Snapshot of the ARFrame that a detection was run against. Carries the camera
+    // pose, lens intrinsics, and LiDAR depth so 2D boxes can be lifted into the 3D space.
+    struct FrameContext {
+        let cameraTransform: simd_float4x4
+        let intrinsics: simd_float3x3
+        let imageResolution: CGSize
+        let depthMap: CVPixelBuffer?
+    }
+
     private var visionModel: VNCoreMLModel?
     private var isProcessing = false
-    
+
+    // Context for the frame currently being processed. Set on `processFrame`,
+    // consumed when Vision returns results.
+    private var currentContext: FrameContext?
+
     // Runs model inference on a background queue so camera capture stays responsive
     private let processingQueue = DispatchQueue(label: "RoomScanner.YOLODetector", qos: .userInitiated)
     
@@ -36,9 +49,12 @@ class YOLODetector {
     }
 
     // Process frame function
-    func processFrame(_ pixelBuffer: CVPixelBuffer) {
+    func processFrame(_ pixelBuffer: CVPixelBuffer, context: FrameContext? = nil) {
         // Prevent overlapping requests by skipping frame if the previous one is still being processed
         guard beginProcessing() else { return }
+
+        // Retain the AR context alongside the frame so detections can be back-projected to 3D.
+        currentContext = context
 
         // If vision model hasn't been loaded yet, try to load it now
         if visionModel == nil {
