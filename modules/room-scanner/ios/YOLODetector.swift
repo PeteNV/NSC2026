@@ -258,6 +258,10 @@ class YOLODetector {
     }
 
     private func handleDetections(request: VNRequest) {
+        // Consume the context captured for this frame, then clear it for the next one.
+        let context = currentContext
+        currentContext = nil
+
         // Convert Vision/CoreML results into a simple dictionary/JSON-like structure
         guard let results = request.results as? [VNRecognizedObjectObservation] else {
             DispatchQueue.main.async {
@@ -275,7 +279,7 @@ class YOLODetector {
 
             // Detection threshold set at above 50% confidence
             if topLabel.confidence > 0.50 {
-                let item: [String: Any] = [
+                var item: [String: Any] = [
                     "label": topLabel.identifier,
                     "confidence": topLabel.confidence,
                     "boundingBox": [
@@ -285,6 +289,21 @@ class YOLODetector {
                         "height": observation.boundingBox.height
                     ]
                 ]
+
+                // Lift the 2D box into 3D world space using the LiDAR depth for this frame.
+                if let context, let spatial = spatialInfo(for: observation.boundingBox, context: context) {
+                    item["position"] = [
+                        "x": spatial.position.x,
+                        "y": spatial.position.y,
+                        "z": spatial.position.z
+                    ]
+                    item["realSize"] = [
+                        "width": spatial.size.width,
+                        "height": spatial.size.height
+                    ]
+                    item["depth"] = spatial.depth
+                }
+
                 detectedItems.append(item)
             }
         }
@@ -292,5 +311,91 @@ class YOLODetector {
         DispatchQueue.main.async {
             self.onDetectionsFound?(jsonPayload)
         }
+    }
+
+    // MARK: - 3D back-projection
+
+    private struct SpatialInfo {
+        let position: simd_float3
+        let size: CGSize
+        let depth: Float
+    }
+
+    // Turns a normalized Vision bounding box into a world-space position and real-world
+    // metric size by sampling the LiDAR depth map and applying the camera intrinsics.
+    private func spatialInfo(for boundingBox: CGRect, context: FrameContext) -> SpatialInfo? {
+        guard let depthMap = context.depthMap else { return nil }
+
+        // Vision boxes are normalized with the origin at the lower-left; convert the
+        // center to normalized top-left space so it maps onto the image/depth buffers.
+        let centerXNorm = boundingBox.midX
+        let centerYNorm = 1 - boundingBox.midY
+
+        guard let depth = sampleDepth(depthMap, atNormalizedX: centerXNorm, y: centerYNorm),
+              depth > 0, depth.isFinite else {
+            return nil
+        }
+
+        // Intrinsics are expressed relative to the full image resolution (top-left origin).
+        let fx = context.intrinsics.columns.0.x
+        let fy = context.intrinsics.columns.1.y
+        let cx = context.intrinsics.columns.2.x
+        let cy = context.intrinsics.columns.2.y
+
+        let imageWidth = Float(context.imageResolution.width)
+        let imageHeight = Float(context.imageResolution.height)
+
+        // Center of the box in image pixels (top-left origin).
+        let px = Float(centerXNorm) * imageWidth
+        let py = Float(centerYNorm) * imageHeight
+
+        // Back-project the pixel to camera space. ARKit camera space is +X right,
+        // +Y up, looking down -Z, while image space is +X right, +Y down.
+        let xCam = (px - cx) / fx * depth
+        let yCam = -(py - cy) / fy * depth
+        let zCam = -depth
+
+        let cameraPoint = simd_float4(xCam, yCam, zCam, 1)
+        let worldPoint = context.cameraTransform * cameraPoint
+
+        // Real-world size via the pinhole model: metersPerPixel = depth / focalLength.
+        let boxPixelWidth = Float(boundingBox.width) * imageWidth
+        let boxPixelHeight = Float(boundingBox.height) * imageHeight
+        let realWidth = boxPixelWidth * depth / fx
+        let realHeight = boxPixelHeight * depth / fy
+
+        return SpatialInfo(
+            position: simd_float3(worldPoint.x, worldPoint.y, worldPoint.z),
+            size: CGSize(width: CGFloat(realWidth), height: CGFloat(realHeight)),
+            depth: depth
+        )
+    }
+
+    // Reads a single depth sample (meters) from the DepthFloat32 LiDAR buffer at a
+    // normalized top-left coordinate.
+    private func sampleDepth(_ depthMap: CVPixelBuffer, atNormalizedX x: CGFloat, y: CGFloat) -> Float? {
+        guard CVPixelBufferGetPixelFormatType(depthMap) == kCVPixelFormatType_DepthFloat32 else {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthMap, .readOnly) }
+
+        let width = CVPixelBufferGetWidth(depthMap)
+        let height = CVPixelBufferGetHeight(depthMap)
+        guard width > 0, height > 0, let base = CVPixelBufferGetBaseAddress(depthMap) else {
+            return nil
+        }
+
+        let clampedX = min(max(x, 0), 1)
+        let clampedY = min(max(y, 0), 1)
+        let col = min(Int(clampedX * CGFloat(width)), width - 1)
+        let row = min(Int(clampedY * CGFloat(height)), height - 1)
+
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
+        let rowPtr = base.advanced(by: row * bytesPerRow)
+        let value = rowPtr.assumingMemoryBound(to: Float32.self)[col]
+
+        return value.isFinite && value > 0 ? value : nil
     }
 }
