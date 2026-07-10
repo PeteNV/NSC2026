@@ -18,6 +18,9 @@ export type YOLOAppliance = {
   lastSeen: number;
   frameCount: number;
   source: "yolo";
+  position?: { x: number; y: number; z: number };
+  realSize?: { width: number; height: number };
+  depth?: number;
 };
 
 export type ApplianceData = RoomPlanObject | YOLOAppliance;
@@ -60,6 +63,9 @@ export type YOLODetection = {
     width: number;
     height: number;
   };
+  position?: { x: number; y: number; z: number };
+  realSize?: { width: number; height: number };
+  depth?: number;
 };
 
 export type RoomScannerViewProps = {
