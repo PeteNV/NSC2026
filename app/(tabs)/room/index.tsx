@@ -24,7 +24,7 @@ export default function RoomEditScreen() {
   const insets = useSafeAreaInsets();
   return (
     <View
-      className="flex-1 gap-4"
+      className="flex-1"
       style={{
         backgroundColor: colors.background,
         paddingBottom: insets.bottom + 16,
@@ -41,7 +41,7 @@ export default function RoomEditScreen() {
 
       {/* Room List */}
       <View
-        className="rounded-t-[54] px-3 outline outline-1"
+        className="mt-4 rounded-t-[54] px-3 outline outline-1"
         style={{
           flex: 0.4,
           backgroundColor: colors.surfaceContainer,
