@@ -29,25 +29,33 @@ const ApplianceListItem: StylableFC<{
       <TouchableRipple
         onPress={() => console.log("Pressed")}
         className={clsx("rounded-xl", className)}
-        style={style}
       >
         <View
           className="h-20 flex-row items-center justify-between gap-4 rounded
             px-4"
-          style={{
-            backgroundColor: colors.surface,
-            borderColor: colors.outlineVariant,
-          }}
+          style={[
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.outlineVariant,
+            },
+            style,
+          ]}
         >
           <MaterialIcons name="bed" size={24} color={colors.onSurfaceVariant} />
           <View className="flex-1 flex-col">
             <Text variant="bodyLarge">{room.name}</Text>
-            <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant }}>
+            <Text
+              variant="bodyMedium"
+              style={{ color: colors.onSurfaceVariant }}
+            >
               {room.usage} h {"•"} {room.power} Wh
             </Text>
           </View>
           <View className="flex-row items-center gap-4">
-            <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
+            <Text
+              variant="labelLarge"
+              style={{ color: colors.onSurfaceVariant }}
+            >
               {(room.power * room.usage) / 1000} kWh
             </Text>
             <Menu
@@ -82,7 +90,11 @@ const ApplianceListItem: StylableFC<{
               />
               <Menu.Item
                 leadingIcon={({ size }) => (
-                  <MaterialIcons name="delete" size={size} color={colors.error} />
+                  <MaterialIcons
+                    name="delete"
+                    size={size}
+                    color={colors.error}
+                  />
                 )}
                 onPress={() => {
                   setMenuVisible(false);

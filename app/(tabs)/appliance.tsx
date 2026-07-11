@@ -26,29 +26,26 @@ export default function ApplianceScreen() {
 
   return (
     <View
-      className="flex-1"
+      className="flex-1 px-4"
       style={{
         backgroundColor: colors.background,
         paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
-      <View
-        className="flex-1 px-4 outline outline-1"
-        style={{
-          backgroundColor: colors.surfaceContainer,
-          outlineColor: colors.outlineVariant,
-        }}
-      >
-        <Text variant="headlineSmall" className="px-9 py-5">
-          All Appliances
-        </Text>
-        <List
-          data={MOCK_APPLIANCES}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ApplianceListItem room={item} />}
-        />
-      </View>
+      <Text variant="headlineSmall" className="px-9 py-5">
+        All Appliances
+      </Text>
+      <List
+        data={MOCK_APPLIANCES}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ApplianceListItem
+            room={item}
+            style={{ backgroundColor: colors.surfaceContainer }}
+          />
+        )}
+      />
     </View>
   );
 }
