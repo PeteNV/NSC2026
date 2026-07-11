@@ -1,4 +1,5 @@
 import Map from "@/components/Map";
+import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import Estimate from "@/components/home/Estimate";
 import FAB from "@/components/wrapper/FAB";
@@ -17,10 +18,10 @@ export default function HomeScreen() {
       className="flex-1"
       style={{
         backgroundColor: colors.background,
-        paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
+      <AppBar title="Home" />
       <View className="flex-1 gap-4 px-4">
         {/* Energy Estimation Summary Card */}
         <Estimate />

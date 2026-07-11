@@ -1,3 +1,4 @@
+import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
@@ -26,10 +27,10 @@ export default function RoomEditScreen() {
       className="flex-1 gap-4"
       style={{
         backgroundColor: colors.background,
-        paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
+      <AppBar title="Rooms" />
       {/* Map */}
       <View className="gap-4 px-4" style={{ flex: 0.6 }}>
         <Card className="!p-0" style={{ flex: 1 }}>

@@ -1,3 +1,4 @@
+import AppBar from "@/components/common/AppBar";
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
@@ -11,11 +12,11 @@ export default function ReportScreen() {
       className="flex-1 gap-4"
       style={{
         backgroundColor: colors.background,
-        paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
-      <Text>Report Screen</Text>
+      <AppBar title="Report" />
+      <Text className="px-4">Report Screen</Text>
     </View>
   );
 }

@@ -1,3 +1,4 @@
+import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
@@ -7,9 +8,9 @@ import ApplianceListItem, {
 import FAB from "@/components/wrapper/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
-import { Appbar, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MOCK_APPLIANCES: ApplianceData[] = [
@@ -49,10 +50,7 @@ export default function RoomApplianceScreen() {
         paddingBottom: insets.bottom + 16,
       }}
     >
-      <Appbar.Header style={{ backgroundColor: colors.surface }}>
-        <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={roomName} />
-      </Appbar.Header>
+      <AppBar title={roomName} back />
       <View className="flex-1 gap-4">
         {/* Map */}
         <View className="gap-4 px-4" style={{ flex: 0.5 }}>

@@ -1,10 +1,10 @@
+import AppBar from "@/components/common/AppBar";
 import List from "@/components/common/List";
 import ApplianceListItem, {
   ApplianceData,
 } from "@/components/room/ApplianceListItem";
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MOCK_APPLIANCES: ApplianceData[] = [
@@ -26,26 +26,25 @@ export default function ApplianceScreen() {
 
   return (
     <View
-      className="flex-1 px-4"
+      className="flex-1"
       style={{
         backgroundColor: colors.background,
-        paddingTop: insets.top,
         paddingBottom: insets.bottom + 16,
       }}
     >
-      <Text variant="headlineSmall" className="px-9 py-5">
-        All Appliances
-      </Text>
-      <List
-        data={MOCK_APPLIANCES}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ApplianceListItem
-            room={item}
-            style={{ backgroundColor: colors.surfaceContainer }}
-          />
-        )}
-      />
+      <AppBar title="All Appliances" />
+      <View className="flex-1 px-4">
+        <List
+          data={MOCK_APPLIANCES}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ApplianceListItem
+              room={item}
+              style={{ backgroundColor: colors.surfaceContainer }}
+            />
+          )}
+        />
+      </View>
     </View>
   );
 }
