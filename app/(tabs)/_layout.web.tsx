@@ -43,7 +43,7 @@ export default function TabLayoutWeb() {
   const { colors } = useTheme();
   return (
     <Tabs>
-      <TabSlot />
+      <TabSlot style={{ flexShrink: 1, flexGrow: 1, minHeight: 0 }} />
       <TabList
         style={{
           flexDirection: "row",
