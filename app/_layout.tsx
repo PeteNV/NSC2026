@@ -1,12 +1,12 @@
 import "../global.css";
 
+import { ThemeModeProvider, useThemeMode } from "@/hooks/useThemeMode";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
-import { useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -16,23 +16,31 @@ export const unstable_settings = {
   anchor: "(tabs)",
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme() ?? "light";
+function RootLayoutContent() {
+  const { scheme } = useThemeMode();
 
   /* Theme mapped from JSON */
-  const activeTheme = theme[colorScheme];
+  const activeTheme = theme[scheme];
 
-  const navTheme = colorScheme === "dark" ? DarkTheme : DefaultTheme;
+  const navTheme = scheme === "dark" ? DarkTheme : DefaultTheme;
 
   return (
+    <PaperProvider theme={activeTheme}>
+      <ThemeProvider value={navTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </ThemeProvider>
+    </PaperProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <SafeAreaProvider>
-      <PaperProvider theme={activeTheme}>
-        <ThemeProvider value={navTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </ThemeProvider>
-      </PaperProvider>
+      <ThemeModeProvider>
+        <RootLayoutContent />
+      </ThemeModeProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { theme } from "@/assets/theme";
-import { FC } from "react";
+import type MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { type ComponentProps, FC } from "react";
 import type { ViewStyle } from "react-native";
 
 /**
@@ -12,3 +13,7 @@ export type AppTheme = typeof theme.light;
 export type StylableFC<Props extends {} = {}> = FC<
   Props & { className?: string; style?: ViewStyle }
 >;
+/**
+ * Material Icons name.
+ */
+export type IconName = ComponentProps<typeof MaterialIcons>["name"];
