@@ -23,6 +23,9 @@ import RoomScannerView, {
     roomScannerNativeViewName,
 } from "../../modules/room-scanner/src/RoomScannerView";
 import type { ScanResult } from "../../modules/room-scanner/src/RoomScanner.types";
+import { mapScanToRoom } from "../../utils/scan-mapper";
+import { MOCK_SCAN_RESULTS } from "../../utils/mock-scan-result";
+import type { Room } from "../../types/room";
 
 const Clipboard = NativeModules.Clipboard;
 
@@ -30,6 +33,7 @@ export default function ScannerTest() {
   const insets = useSafeAreaInsets();
   const [isScanning, setIsScanning] = useState(false);
   const [scanData, setScanData] = useState<ScanResult | null>(null);
+  const [mappedRoom, setMappedRoom] = useState<Room | null>(null);
   const [copied, setCopied] = useState(false);
   const nativeUnimoduleProxy = NativeModules.NativeUnimoduleProxy;
   const moduleConstants =
@@ -44,6 +48,12 @@ export default function ScannerTest() {
   );
   const isSupported =
     (RoomScannerModule?.isSupported ?? false) && isRoomScannerViewAvailable;
+
+  const handleTestCoupler = () => {
+    const room = mapScanToRoom(MOCK_SCAN_RESULTS[0], "test-room-1", "Kitchen");
+    setMappedRoom(room);
+    console.log("Mapped Room:", JSON.stringify(room, null, 2));
+  };
 
   const handleCopy = () => {
     if (!scanData) return;
@@ -112,9 +122,17 @@ export default function ScannerTest() {
           disabled={!isSupported}
         />
 
+        <View style={{ height: 8 }} />
+
+        <Button
+          title="Test Coupler (Mock → Room)"
+          onPress={handleTestCoupler}
+          color="#4a90d9"
+        />
+
         <ScrollView style={styles.results}>
           <View style={styles.resultHeader}>
-            <Text style={styles.title}>Scan Result:</Text>
+            <Text style={styles.title}>Scan Result (raw):</Text>
             {scanData && (
               <Button
                 title={copied ? "Copied!" : "Copy JSON"}
@@ -125,6 +143,15 @@ export default function ScannerTest() {
           <Text>
             {scanData ? JSON.stringify(scanData, null, 2) : "No data yet..."}
           </Text>
+
+          {mappedRoom && (
+            <>
+              <Text style={styles.sectionTitle}>Mapped Room (flat):</Text>
+              <Text>
+                {JSON.stringify(mappedRoom, null, 2)}
+              </Text>
+            </>
+          )}
         </ScrollView>
       </View>
     </View>

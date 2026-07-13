@@ -1,7 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import {
   Button,
@@ -11,7 +11,7 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import type { ApplianceData } from "./ApplianceListItem";
+import type { Appliance } from "@/types/appliance";
 
 const APPLIANCE_TYPES = [
   "Air conditioner",
@@ -30,8 +30,8 @@ const APPLIANCE_TYPES = [
 const EditApplianceDialog: StylableFC<{
   visible: boolean;
   onDismiss: () => void;
-  appliance?: ApplianceData;
-  onSave?: (data: ApplianceData) => void;
+  appliance?: Appliance;
+  onSave?: (data: Appliance) => void;
 }> = ({ visible, onDismiss, appliance, onSave, className, style }) => {
   const { colors } = useTheme();
   const [name, setName] = useState(appliance?.name ?? "");
@@ -41,8 +41,16 @@ const EditApplianceDialog: StylableFC<{
     String(Math.floor(appliance?.usage ?? 20)),
   );
   const [minutes, setMinutes] = useState(
-    String(Math.round(((appliance?.usage ?? 0) % 1) * 60)),
+    String(Math.floor(((appliance?.usage ?? 0) % 1) * 60)),
   );
+
+  useEffect(() => {
+    setName(appliance?.name ?? "");
+    setType(appliance?.name ?? "Air conditioner");
+    setPower(String(appliance?.power ?? "2400"));
+    setHours(String(Math.floor(appliance?.usage ?? 20)));
+    setMinutes(String(Math.floor(((appliance?.usage ?? 0) % 1) * 60)));
+  }, [visible, appliance?.id]);
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
   const [focusedField, setFocusedField] = useState<"hours" | "minutes" | null>(
     null,
@@ -52,6 +60,7 @@ const EditApplianceDialog: StylableFC<{
     const hoursNum = parseInt(hours, 10) || 0;
     const minutesNum = parseInt(minutes, 10) || 0;
     onSave?.({
+      ...appliance,
       id: appliance?.id ?? String(Date.now()),
       name,
       usage: hoursNum + minutesNum / 60,
@@ -142,6 +151,7 @@ const EditApplianceDialog: StylableFC<{
                 title={t}
                 onPress={() => {
                   setType(t);
+                  setName(t);
                   setTypeMenuVisible(false);
                 }}
               />

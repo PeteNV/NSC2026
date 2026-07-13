@@ -1,28 +1,30 @@
 import { useTheme } from "@/hooks/useTheme";
+import type { Appliance } from "@/types/appliance";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
 import { useState } from "react";
 import { View } from "react-native";
-import { Menu, Text, TouchableRipple } from "react-native-paper";
+import {
+  Button,
+  Dialog,
+  Menu,
+  Portal,
+  Text,
+  TouchableRipple,
+} from "react-native-paper";
 import EditApplianceDialog from "./EditApplianceDialog";
 
-export type ApplianceData = {
-  id: string;
-  name: string;
-  usage: number;
-  power: number;
-};
-
 const ApplianceListItem: StylableFC<{
-  room: ApplianceData;
+  room: Appliance;
   onPress?: () => void;
-  onEdit?: (data: ApplianceData) => void;
+  onEdit?: (data: Appliance) => void;
   onDelete?: () => void;
 }> = ({ room, onPress, onEdit, onDelete, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   return (
     <>
@@ -84,7 +86,7 @@ const ApplianceListItem: StylableFC<{
                 )}
                 onPress={() => {
                   setMenuVisible(false);
-                  setDialogVisible(true);
+                  setTimeout(() => setDialogVisible(true), 300);
                 }}
                 title="Edit"
               />
@@ -98,7 +100,7 @@ const ApplianceListItem: StylableFC<{
                 )}
                 onPress={() => {
                   setMenuVisible(false);
-                  onDelete?.();
+                  setTimeout(() => setDeleteDialogVisible(true), 300);
                 }}
                 title="Delete"
                 titleStyle={{ color: colors.error }}
@@ -116,6 +118,42 @@ const ApplianceListItem: StylableFC<{
           onEdit?.(data);
         }}
       />
+      <Portal>
+        <Dialog
+          visible={deleteDialogVisible}
+          onDismiss={() => setDeleteDialogVisible(false)}
+          style={{
+            backgroundColor: colors.surface,
+            maxWidth: 312,
+            alignSelf: "center",
+            width: "100%",
+          }}
+        >
+          <Dialog.Content>
+            <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
+              Are you sure you want to delete "{room.name}"?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              mode="text"
+              onPress={() => setDeleteDialogVisible(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="text"
+              textColor={colors.error}
+              onPress={() => {
+                setDeleteDialogVisible(false);
+                onDelete?.();
+              }}
+            >
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </>
   );
 };

@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import type { Room } from "@/types/room";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
@@ -7,15 +8,8 @@ import { useState } from "react";
 import { View } from "react-native";
 import { Menu, Text, TouchableRipple } from "react-native-paper";
 
-export type RoomData = {
-  id: string;
-  name: string;
-  applianceCount: number;
-  power: number;
-};
-
 const RoomListItem: StylableFC<{
-  room: RoomData;
+  room: Room;
   onPress?: () => void;
   onDelete?: () => void;
 }> = ({ room, onPress, onDelete, className, style }) => {
