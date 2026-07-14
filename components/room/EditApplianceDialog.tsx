@@ -1,8 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState } from "react";
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { Keyboard, View } from "react-native";
 import {
   Button,
   Dialog,
@@ -47,6 +47,20 @@ const EditApplianceDialog: StylableFC<{
   const [focusedField, setFocusedField] = useState<"hours" | "minutes" | null>(
     null,
   );
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardWillShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener("keyboardWillHide", () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSave = () => {
     const hoursNum = parseInt(hours, 10) || 0;
@@ -68,10 +82,11 @@ const EditApplianceDialog: StylableFC<{
           backgroundColor: colors.surface,
           maxWidth: 312,
           alignSelf: "center",
-          width: "100%",
+          width: "80%",
+          marginBottom: keyboardHeight,
         }}
       >
-        <Dialog.Content>
+        <Dialog.Content style={{ paddingBottom: 0 }}>
           {/* Header */}
           <View className="mb-4 flex-row items-center justify-between">
             <Text variant="headlineSmall" style={{ color: colors.onSurface }}>
@@ -181,11 +196,11 @@ const EditApplianceDialog: StylableFC<{
           >
             Usage
           </Text>
-          <View className="mb-4 flex-1 flex-row items-center gap-3">
+          <View className="mb-4 flex-row items-center gap-3">
             {/* Hours */}
             <View className="flex-1 items-center gap-2">
               <View
-                className="h-14 w-[120] justify-center rounded-lg"
+                className="flex-1 h-14 w-[120] justify-center rounded-lg"
                 style={{
                   backgroundColor:
                     focusedField === "hours"
@@ -232,7 +247,7 @@ const EditApplianceDialog: StylableFC<{
               :
             </Text>
             {/* Minutes */}
-            <View className="items-center gap-2">
+            <View className="flex-1 items-center gap-2">
               <View
                 className="h-14 w-[120] justify-center rounded-lg"
                 style={{
@@ -277,8 +292,7 @@ const EditApplianceDialog: StylableFC<{
           </View>
         </Dialog.Content>
 
-        {/* Footer Buttons */}
-        <Dialog.Actions>
+        <Dialog.Actions style={{ flexGrow: 0 }}>
           <Button mode="text" textColor={colors.error} onPress={onDismiss}>
             Cancel
           </Button>
