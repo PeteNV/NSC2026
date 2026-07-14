@@ -180,7 +180,6 @@ const EditApplianceDialog: StylableFC<{
             value={power}
             onChangeText={setPower}
             keyboardType="numeric"
-            autoFocus
             right={
               power ? (
                 <TextInput.Icon

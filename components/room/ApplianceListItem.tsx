@@ -3,7 +3,7 @@ import type { Appliance } from "@/types/appliance";
 import { type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import {
   Button,
@@ -25,6 +25,22 @@ const ApplianceListItem: StylableFC<{
   const [menuVisible, setMenuVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const pendingAction = useRef<"edit" | "delete" | null>(null);
+
+  useEffect(() => {
+    if (!menuVisible && pendingAction.current) {
+      const action = pendingAction.current;
+      pendingAction.current = null;
+      requestAnimationFrame(() => {
+        if (action === "edit") setDialogVisible(true);
+        else setDeleteDialogVisible(true);
+      });
+    }
+  }, [menuVisible]);
+
+  const handleMenuDismiss = useCallback(() => {
+    setMenuVisible(false);
+  }, []);
 
   return (
     <>
@@ -63,7 +79,7 @@ const ApplianceListItem: StylableFC<{
             <Menu
               style={{ padding: 32 }}
               visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
+              onDismiss={handleMenuDismiss}
               contentStyle={{ backgroundColor: colors.surfaceContainerHigh }}
               anchor={
                 <TouchableRipple
@@ -85,8 +101,8 @@ const ApplianceListItem: StylableFC<{
                   <MaterialIcons name="edit" size={size} color={color} />
                 )}
                 onPress={() => {
+                  pendingAction.current = "edit";
                   setMenuVisible(false);
-                  setTimeout(() => setDialogVisible(true), 300);
                 }}
                 title="Edit"
               />
@@ -99,8 +115,8 @@ const ApplianceListItem: StylableFC<{
                   />
                 )}
                 onPress={() => {
+                  pendingAction.current = "delete";
                   setMenuVisible(false);
-                  setTimeout(() => setDeleteDialogVisible(true), 300);
                 }}
                 title="Delete"
                 titleStyle={{ color: colors.error }}
@@ -131,7 +147,7 @@ const ApplianceListItem: StylableFC<{
         >
           <Dialog.Content>
             <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
-              Are you sure you want to delete "{room.name}"?
+              Are you sure you want to delete &ldquo;{room.name}&rdquo;?
             </Text>
           </Dialog.Content>
           <Dialog.Actions>

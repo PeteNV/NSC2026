@@ -7,6 +7,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -37,10 +38,12 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <ThemeModeProvider>
-        <RootLayoutContent />
-      </ThemeModeProvider>
-    </SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <ThemeModeProvider>
+            <RootLayoutContent />
+          </ThemeModeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
   );
 }
