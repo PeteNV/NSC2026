@@ -2,26 +2,19 @@ import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
-import RoomListItem, { type RoomData } from "@/components/room/RoomListItem";
+import RoomListItem from "@/components/room/RoomListItem";
 import ScanRoomButton from "@/components/room/ScanRoomButton";
+import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const MOCK_ROOMS: RoomData[] = [
-  { id: "1", name: "Living Room", applianceCount: 5, power: 40 },
-  { id: "2", name: "Kitchen", applianceCount: 8, power: 50 },
-  { id: "3", name: "Bedroom", applianceCount: 3, power: 50 },
-  { id: "4", name: "Bathroom", applianceCount: 2, power: 40 },
-  { id: "5", name: "Bathroom", applianceCount: 2, power: 60 },
-  { id: "6", name: "Bathroom", applianceCount: 2, power: 60 },
-  { id: "7", name: "Bathroom", applianceCount: 2, power: 40 },
-];
-
 export default function RoomEditScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { rooms, loaded, deleteAppliance } = usePersistedRooms();
+
   return (
     <View
       className="flex-1"
@@ -34,7 +27,7 @@ export default function RoomEditScreen() {
       {/* Map */}
       <View className="gap-4 px-4" style={{ flex: 0.6 }}>
         <Card className="!p-0" style={{ flex: 1 }}>
-          <Map />
+          {rooms.length > 0 && <Map room={rooms[0]} />}
         </Card>
         <ScanRoomButton onScanRoom={() => {}} onManualEntry={() => {}} />
       </View>
@@ -52,7 +45,7 @@ export default function RoomEditScreen() {
           Room List
         </Text>
         <List
-          data={MOCK_ROOMS}
+          data={rooms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <RoomListItem room={item} />}
         />

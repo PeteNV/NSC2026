@@ -2,45 +2,41 @@ import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
-import ApplianceListItem, {
-  ApplianceData,
-} from "@/components/room/ApplianceListItem";
+import ApplianceListItem from "@/components/room/ApplianceListItem";
 import FAB from "@/components/wrapper/FAB";
+import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams } from "expo-router";
+import { useCallback } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const MOCK_APPLIANCES: ApplianceData[] = [
-  { id: "1", name: "Refrigerator", usage: 24, power: 150 },
-  { id: "2", name: "Air Conditioner", usage: 8, power: 1500 },
-  { id: "3", name: "Washing Machine", usage: 2, power: 500 },
-  { id: "4", name: "LED Lights (6)", usage: 6, power: 60 },
-  { id: "5", name: "Television", usage: 4, power: 120 },
-  { id: "6", name: "Microwave", usage: 1, power: 1200 },
-  { id: "7", name: "Laptop", usage: 6, power: 65 },
-  { id: "8", name: "Water Heater", usage: 3, power: 2000 },
-  { id: "9", name: "Ceiling Fan", usage: 10, power: 75 },
-  { id: "10", name: "Clothes Dryer", usage: 2, power: 1800 },
-];
-
-const ROOM_NAMES: Record<string, string> = {
-  "1": "Living Room",
-  "2": "Kitchen",
-  "3": "Bedroom",
-  "4": "Bathroom",
-  "5": "Bathroom",
-  "6": "Bathroom",
-  "7": "Bathroom",
-};
+import type { Appliance } from "@/types/appliance";
 
 export default function RoomApplianceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const roomName = ROOM_NAMES[id ?? ""] ?? `Room ${id}`;
+  const { rooms, updateAppliance, deleteAppliance } = usePersistedRooms();
+
+  const room = rooms.find((r) => r.id === id);
+  const roomName = room?.name ?? `Room ${id}`;
+  const appliances = room?.appliances ?? [];
+
+  const handleEdit = useCallback(
+    (data: Appliance) => {
+      if (id) updateAppliance(id, data);
+    },
+    [id, updateAppliance],
+  );
+
+  const handleDelete = useCallback(
+    (applianceId: string) => {
+      if (id) deleteAppliance(id, applianceId);
+    },
+    [id, deleteAppliance],
+  );
 
   return (
     <View
@@ -55,7 +51,10 @@ export default function RoomApplianceScreen() {
         {/* Map */}
         <View className="gap-4 px-4" style={{ flex: 0.5 }}>
           <Card className="flex-1 !p-0">
-            <Map hideFloorIndicator />
+            <Map
+              hideFloorIndicator
+              room={room ?? undefined}
+            />
             <FAB
               className="absolute bottom-4 right-4"
               icon={({ size, color }) => (
@@ -78,9 +77,15 @@ export default function RoomApplianceScreen() {
             Appliances in Room {id}
           </Text>
           <List
-            data={MOCK_APPLIANCES}
+            data={appliances}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <ApplianceListItem room={item} />}
+            renderItem={({ item }) => (
+              <ApplianceListItem
+                room={item}
+                onEdit={handleEdit}
+                onDelete={() => handleDelete(item.id)}
+              />
+            )}
           />
         </View>
       </View>
