@@ -4,14 +4,17 @@ import type {
 } from "@/modules/room-scanner";
 import type { Appliance } from "@/types/appliance";
 import type { Room, Wall, DoorWindow } from "@/types/room";
+import { baselineSeed } from "./energy";
 
 function mapAppliance(a: ScanApplianceData): Appliance {
   const isRoomPlan = a.source === "roomplan";
+  const name = isRoomPlan ? a.category : a.label;
+  const { power, usage } = baselineSeed(name);
   return {
     id: a.id,
-    name: isRoomPlan ? a.category : a.label,
-    usage: 0,
-    power: 0,
+    name,
+    usage,
+    power,
     position: a.position,
     dimensions: isRoomPlan ? a.dimensions : undefined,
     source: a.source,

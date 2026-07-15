@@ -1,6 +1,6 @@
 import type { Appliance } from "@/types/appliance";
 import type { Room } from "@/types/room";
-import { applianceBaselineMonthlyKwh } from "./baseline";
+import { applianceBaseline, applianceBaselineMonthlyKwh } from "./baseline";
 
 export const DAYS_PER_MONTH = 30;
 export const GRID_CO2_KG_PER_KWH = 0.42;
@@ -20,6 +20,18 @@ export function applianceDailyKwh(appliance: Appliance): number {
 
 export function applianceMonthlyKwh(appliance: Appliance): number {
   return applianceDailyKwh(appliance) * DAYS_PER_MONTH;
+}
+
+export function baselineSeed(name: string): { power: number; usage: number } {
+  const b = applianceBaseline(name);
+  if (!b) return { power: 0, usage: 0 };
+  const dailyKwh = b.monthlyKwhMid / DAYS_PER_MONTH;
+  const power =
+    b.powerMinW != null && b.powerMaxW != null
+      ? (b.powerMinW + b.powerMaxW) / 2
+      : (dailyKwh * 1000) / 24;
+  const usage = power > 0 ? (dailyKwh * 1000) / power : 0;
+  return { power: Math.round(power), usage: Math.round(usage * 100) / 100 };
 }
 
 export function roomMonthlyKwh(room: Room): number {
