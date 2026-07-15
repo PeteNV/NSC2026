@@ -1,12 +1,19 @@
 import Card from "@/components/common/Card";
 import { useTheme } from "@/hooks/useTheme";
+import { usePersistedRooms } from "@/hooks/usePersistedRooms";
+import { summarizeEnergy } from "@/utils/energy";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React from "react";
+import React, { useMemo } from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
 
+const kwh = (n: number) => Math.round(n).toLocaleString();
+
 export default function Estimate() {
   const { colors } = useTheme();
+  const { rooms } = usePersistedRooms();
+  const summary = useMemo(() => summarizeEnergy(rooms), [rooms]);
+  const deltaSign = summary.deltaKwh >= 0 ? "+" : "-";
   return (
     <Card style={{ backgroundColor: colors.surfaceContainer }}>
       <Text variant="titleSmall" style={{ color: colors.onSurfaceVariant }}>
@@ -30,7 +37,7 @@ export default function Estimate() {
             color: colors.onPrimaryContainer,
           }}
         >
-          1,234{" "}
+          {kwh(summary.monthlyKwh)}{" "}
         </Text>
         <Text
           variant="displaySmall"
@@ -44,9 +51,10 @@ export default function Estimate() {
         style={{ fontWeight: "bold", color: colors.secondary }}
       >
         {" "}
-        +520{" "}
+        {deltaSign}
+        {kwh(Math.abs(summary.deltaKwh))}{" "}
         <Text variant="bodyMedium" style={{ color: colors.secondary }}>
-          kWh from Base Estimation of 714 kWh{" "}
+          kWh from Base Estimation of {kwh(summary.baselineKwh)} kWh{" "}
         </Text>
       </Text>
       <View
@@ -68,7 +76,7 @@ export default function Estimate() {
             variant="bodyLarge"
             style={{ fontSize: 18, color: colors.onPrimaryContainer }}
           >
-            ~2,159 Baht
+            ~{kwh(summary.costBaht)} Baht
           </Text>
         </View>
         <View
@@ -82,7 +90,7 @@ export default function Estimate() {
             variant="bodyLarge"
             style={{ fontSize: 18, color: colors.onPrimaryContainer }}
           >
-            14.79 kg
+            {summary.co2Kg.toFixed(2)} kg
           </Text>
         </View>
       </View>
