@@ -2,7 +2,7 @@ import { useTheme } from "@/hooks/useTheme";
 import type { AppTheme } from "@/types/common";
 import { StylableFC } from "@/types/common";
 import type { DoorWindow, Room, Wall } from "@/types/room";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -36,6 +36,21 @@ function wallEndpoints(wall: Wall) {
     x2: wall.position.x + Math.cos(rad) * wall.length,
     z2: wall.position.z + Math.sin(rad) * wall.length,
   };
+}
+
+function rotateXZ(
+  px: number,
+  pz: number,
+  cx: number,
+  cz: number,
+  degrees: number,
+) {
+  const rad = (-degrees * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const dx = px - cx;
+  const dz = pz - cz;
+  return { x: cx + dx * cos - dz * sin, z: cz + dx * sin + dz * cos };
 }
 
 function roomBounds(walls: Wall[]) {
@@ -156,10 +171,14 @@ function applianceColor(name: string, colors: AppTheme["colors"]): string {
 
 function oppositeEdge(edge: Edge): Edge {
   switch (edge) {
-    case "bottom": return "top";
-    case "top": return "bottom";
-    case "left": return "right";
-    case "right": return "left";
+    case "bottom":
+      return "top";
+    case "top":
+      return "bottom";
+    case "left":
+      return "right";
+    case "right":
+      return "left";
   }
 }
 
@@ -168,34 +187,56 @@ function globalDoorCenter(room: Room, door: DoorWindow) {
   return { x: o.x + door.position.x, z: o.z + door.position.z };
 }
 
+const EDGE_CYCLE: Edge[] = ["left", "top", "right", "bottom"];
+
+function rotateEdge(edge: Edge, degrees: number): Edge {
+  if (!degrees) return edge;
+  const steps = Math.round(((degrees % 360) + 360) % 360 / 90);
+  const idx = EDGE_CYCLE.indexOf(edge);
+  return EDGE_CYCLE[(idx + steps) % 4];
+}
+
 function findDoorSnap(
   draggedRoom: Room,
   draggedOrigin: { x: number; z: number },
   allRooms: Room[],
+  rotations: Record<string, number>,
 ): { x: number; z: number } | null {
   if (!draggedRoom.doors || draggedRoom.doors.length === 0) return null;
   if (!draggedRoom.walls) return null;
 
   const draggedBounds = roomBounds(draggedRoom.walls);
+  const roomCX = draggedOrigin.x + (draggedBounds.minX + draggedBounds.maxX) / 2;
+  const roomCZ = draggedOrigin.z + (draggedBounds.minZ + draggedBounds.maxZ) / 2;
+  const draggedRot = rotations[draggedRoom.id] ?? 0;
+
   let best: { x: number; z: number; dist: number } | null = null;
 
   for (const door of draggedRoom.doors) {
-    const edge = detectEdge(draggedBounds, door);
-    if (!edge) continue;
+    const originalEdge = detectEdge(draggedBounds, door);
+    if (!originalEdge) continue;
+    const edge = rotateEdge(originalEdge, draggedRot);
     const targetEdge = oppositeEdge(edge);
-    const dGlobal = {
+
+    const rawGlobal = {
       x: draggedOrigin.x + door.position.x,
       z: draggedOrigin.z + door.position.z,
     };
+    const dGlobal = draggedRot
+      ? rotateXZ(rawGlobal.x, rawGlobal.z, roomCX, roomCZ, draggedRot)
+      : rawGlobal;
 
     for (const other of allRooms) {
       if (other.id === draggedRoom.id) continue;
       if (!other.doors || !other.walls) continue;
       const otherBounds = roomBounds(other.walls);
+      const otherRot = rotations[other.id] ?? 0;
 
       for (const otherDoor of other.doors) {
-        const oEdge = detectEdge(otherBounds, otherDoor);
-        if (!oEdge || oEdge !== targetEdge) continue;
+        const oOriginalEdge = detectEdge(otherBounds, otherDoor);
+        if (!oOriginalEdge) continue;
+        const oEdge = rotateEdge(oOriginalEdge, otherRot);
+        if (oEdge !== targetEdge) continue;
         const oGlobal = globalDoorCenter(other, otherDoor);
 
         const dx = dGlobal.x - oGlobal.x;
@@ -225,6 +266,7 @@ function RoomGroup({
   offsetY,
   editable,
   onMove,
+  onRotate,
 }: {
   room: Room;
   colors: AppTheme["colors"];
@@ -234,6 +276,7 @@ function RoomGroup({
   offsetY: number;
   editable: boolean;
   onMove?: (roomId: string, origin: { x: number; z: number }) => void;
+  onRotate?: (roomId: string, rotation: number) => void;
 }) {
   const walls = useMemo(() => room.walls ?? [], [room.walls]);
   const doors = room.doors ?? [];
@@ -246,6 +289,7 @@ function RoomGroup({
   const startDX = useSharedValue(0);
   const startDY = useSharedValue(0);
   const draggingId = useSharedValue("");
+  const roomRotation = useSharedValue(0);
 
   const localBounds = useMemo(() => roomBounds(walls), [walls]);
 
@@ -270,9 +314,15 @@ function RoomGroup({
       onMove?.(room.id, newOrigin);
     });
 
-  const animatedProps = useAnimatedProps(() => ({
-    transform: `translate(${dragX.value}, ${dragY.value})`,
-  }));
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDelay(150)
+    .onEnd(() => {
+      roomRotation.value = (roomRotation.value + 90) % 360;
+      onRotate?.(room.id, roomRotation.value);
+    });
+
+  const roomGesture = Gesture.Simultaneous(doubleTap, pan);
 
   const globalOriginX = o.x;
   const globalOriginZ = o.z;
@@ -333,8 +383,12 @@ function RoomGroup({
     offsetY,
   );
 
+  const animatedProps = useAnimatedProps(() => ({
+    transform: `translate(${dragX.value}, ${dragY.value}) rotate(${roomRotation.value}, ${labelScreen.sx}, ${labelScreen.sy})`,
+  }));
+
   return (
-    <GestureDetector gesture={pan}>
+    <GestureDetector gesture={roomGesture}>
       <AnimatedG animatedProps={animatedProps}>
         <Path d={floorPath} fill={colors.surfaceContainerHighest} />
 
@@ -463,7 +517,10 @@ function RoomGroup({
           x={labelScreen.sx}
           y={labelScreen.sy}
           textAnchor="middle"
-          fontSize={Math.max(12, Math.min(room.name.length > 6 ? 10 : 12, scale * 1.5))}
+          fontSize={Math.max(
+            12,
+            Math.min(room.name.length > 6 ? 10 : 12, scale * 1.5),
+          )}
           fill={colors.onSurface}
           opacity={0.5}
         >
@@ -483,6 +540,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
 }) => {
   const { colors } = useTheme();
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const roomRotationsRef = useRef<Record<string, number>>({});
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -563,7 +621,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       const room = rooms.find((r) => r.id === roomId);
       if (!room) return;
 
-      const snapped = findDoorSnap(room, origin, rooms);
+      const snapped = findDoorSnap(room, origin, rooms, roomRotationsRef.current);
       onRoomMove?.(roomId, snapped ?? origin);
     },
     [rooms, onRoomMove],
@@ -605,6 +663,9 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
                 offsetY={offsetY}
                 editable={editable}
                 onMove={handleRoomMove}
+                onRotate={(id, rot) => {
+                  roomRotationsRef.current[id] = rot;
+                }}
               />
             ))}
           </AnimatedG>
