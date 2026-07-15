@@ -1,0 +1,26 @@
+class,source_mapping,power_min_w,power_max_w,monthly_kwh_min,monthly_kwh_max,monthly_kwh_mid,note
+air_conditioner,air_conditioner,1000,3500,180,600,390,
+air_fryer,air_grill,1200,2000,10,30,20,mapped from aerogrill
+air_purifier,air_purifier,20,100,5,36,20.5,
+blender,blender,300,1000,1,5,3,
+coffee_machine,coffee_machine,800,2000,10,30,20,
+desktop,desktop_pc_with_monitor,220,700,40,170,105,includes monitor
+electric_kettle,electric_kettle,1000,2500,15,30,22.5,
+electric_whisker,blender (proxy),300,1000,1,5,3,NO DIRECT DATA - blender used as proxy
+fan,fan,30,75,5,18,11.5,
+hair_dryer,hair_dryer,800,2000,2,8,5,
+induction_cooker,hob,1500,3000,50,100,75,source is generic electric hob
+iron,flat_iron,1000,2500,3,12,7.5,
+laptop,laptop,20,100,3.6,24,13.8,
+light,led_lamp,5,20,1.2,7.2,4.2,per lamp; chandelier ~36 kWh/mo
+microwave,microwave,600,1200,3,6,4.5,
+oven,oven,2000,4000,30,60,45,
+printer,printer_laser+inkjet,20,1000,2,20,11,laser 300-1000W / inkjet 20-100W
+refrigerator,refrigerator,,,33,50,41.7,continuous; ~500 kWh/year avg
+rice_cooker,multicooker (proxy),600,1500,15,60,37.5,NO DIRECT DATA - multicooker used as proxy
+router,router,5,30,3,11,7,
+screen,tv,50,200,6,30,18,mapped from TV/display
+stove,hob,1500,3000,50,100,75,same source as induction_cooker
+toaster,toaster,700,1500,3,9,6,
+vacuum,vacuum_cleaner,1000,2500,10,30,20,
+washing_machine,washing_machine,1000,2500,16,50,33,
