@@ -384,7 +384,13 @@ function RoomGroup({
   );
 
   const animatedProps = useAnimatedProps(() => ({
-    transform: `translate(${dragX.value}, ${dragY.value}) rotate(${roomRotation.value}, ${labelScreen.sx}, ${labelScreen.sy})`,
+    transform: [
+      { translateX: dragX.value + labelScreen.sx },
+      { translateY: dragY.value + labelScreen.sy },
+      { rotate: `${roomRotation.value}deg` },
+      { translateX: -labelScreen.sx },
+      { translateY: -labelScreen.sy },
+    ],
   }));
 
   return (
