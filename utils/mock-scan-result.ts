@@ -175,6 +175,13 @@ function enrichAppliances(appliances?: Appliance[]): Appliance[] {
   }));
 }
 
+const ROOM_ORIGINS = [
+  { x: 0, z: 0 },
+  { x: 6, z: 0 },
+  { x: 0, z: 5 },
+  { x: 4, z: 5 },
+];
+
 export const MOCK_ROOMS: Room[] = MOCK_SCAN_RESULTS.map((scan, i) => {
   const room = mapScanToRoom(
     scan,
@@ -185,6 +192,7 @@ export const MOCK_ROOMS: Room[] = MOCK_SCAN_RESULTS.map((scan, i) => {
   return {
     ...room,
     appliances: enrichAppliances(room.appliances),
+    origin: ROOM_ORIGINS[i],
   };
 });
 

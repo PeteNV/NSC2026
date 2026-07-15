@@ -21,6 +21,7 @@ export type Room = {
   wallCount: number;
   doorCount: number;
   windowCount: number;
+  origin?: { x: number; z: number };
   walls?: Wall[];
   appliances?: Appliance[];
   doors?: DoorWindow[];

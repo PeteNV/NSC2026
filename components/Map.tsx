@@ -3,17 +3,17 @@ import FloorIndicator from "@/components/subcomponents/FloorIndicator";
 import { useTheme } from "@/hooks/useTheme";
 import { StylableFC } from "@/types/common";
 import type { Room } from "@/types/room";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
 
-type Props = {
+type ButtonProps = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
 };
 
-export function NormalButton({ title, onPress, disabled = false }: Props) {
+export function NormalButton({ title, onPress, disabled = false }: ButtonProps) {
   return (
     <Button mode="contained" onPress={onPress} disabled={disabled}>
       {title}
@@ -21,13 +21,23 @@ export function NormalButton({ title, onPress, disabled = false }: Props) {
   );
 }
 
-const Map: StylableFC<{ hideFloorIndicator?: boolean; room?: Room }> = ({
-  hideFloorIndicator = false,
-  room,
-}) => {
+const Map: StylableFC<{
+  hideFloorIndicator?: boolean;
+  room?: Room;
+  rooms?: Room[];
+  editable?: boolean;
+  onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
+}> = ({ hideFloorIndicator = false, room, rooms, editable, onRoomMove }) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
-  const hasGeometry = room?.walls && room.walls.length > 0;
+
+  const allRooms = useMemo(() => {
+    if (rooms && rooms.length > 0) return rooms;
+    if (room) return [room];
+    return [];
+  }, [rooms, room]);
+
+  const hasGeometry = allRooms.some((r) => r.walls && r.walls.length > 0);
 
   return (
     <View className="relative flex-1 rounded-lg">
@@ -37,10 +47,9 @@ const Map: StylableFC<{ hideFloorIndicator?: boolean; room?: Room }> = ({
       >
         {hasGeometry ? (
           <FloorPlan
-            walls={room!.walls!}
-            doors={room!.doors}
-            windows={room!.windows}
-            appliances={room!.appliances}
+            rooms={allRooms}
+            editable={editable}
+            onRoomMove={onRoomMove}
           />
         ) : (
           <Text

@@ -1,8 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
-import type { Appliance } from "@/types/appliance";
 import type { AppTheme } from "@/types/common";
 import { StylableFC } from "@/types/common";
-import type { DoorWindow, Wall } from "@/types/room";
+import type { DoorWindow, Room, Wall } from "@/types/room";
 import React, { useCallback, useMemo, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import { View } from "react-native";
@@ -18,16 +17,16 @@ const AnimatedG = Animated.createAnimatedComponent(G);
 type Edge = "bottom" | "top" | "left" | "right";
 
 type FloorPlanProps = {
-  walls: Wall[];
-  doors?: DoorWindow[];
-  windows?: DoorWindow[];
-  appliances?: Appliance[];
+  rooms: Room[];
+  editable?: boolean;
+  onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
 };
 
 const PADDING_RATIO = 0.12;
 const WALL_STROKE = 4;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
+const SNAP_THRESHOLD = 0.5;
 
 function wallEndpoints(wall: Wall) {
   const rad = (wall.rotation * Math.PI) / 180;
@@ -52,6 +51,27 @@ function roomBounds(walls: Wall[]) {
     maxX: Math.max(...all.map((p) => p.x)),
     minZ: Math.min(...all.map((p) => p.z)),
     maxZ: Math.max(...all.map((p) => p.z)),
+  };
+}
+
+function globalBounds(rooms: Room[]) {
+  const points = rooms.flatMap((r) => {
+    const o = r.origin ?? { x: 0, z: 0 };
+    if (!r.walls) return [];
+    return r.walls.flatMap((w) => {
+      const e = wallEndpoints(w);
+      return [
+        { x: e.x1 + o.x, z: e.z1 + o.z },
+        { x: e.x2 + o.x, z: e.z2 + o.z },
+      ];
+    });
+  });
+  if (points.length === 0) return { minX: 0, maxX: 1, minZ: 0, maxZ: 1 };
+  return {
+    minX: Math.min(...points.map((p) => p.x)),
+    maxX: Math.max(...points.map((p) => p.x)),
+    minZ: Math.min(...points.map((p) => p.z)),
+    maxZ: Math.max(...points.map((p) => p.z)),
   };
 }
 
@@ -134,11 +154,330 @@ function applianceColor(name: string, colors: AppTheme["colors"]): string {
   return colors[applianceColorKey(name)] ?? colors.surfaceContainerHigh;
 }
 
+function oppositeEdge(edge: Edge): Edge {
+  switch (edge) {
+    case "bottom": return "top";
+    case "top": return "bottom";
+    case "left": return "right";
+    case "right": return "left";
+  }
+}
+
+function globalDoorCenter(room: Room, door: DoorWindow) {
+  const o = room.origin ?? { x: 0, z: 0 };
+  return { x: o.x + door.position.x, z: o.z + door.position.z };
+}
+
+function findDoorSnap(
+  draggedRoom: Room,
+  draggedOrigin: { x: number; z: number },
+  allRooms: Room[],
+): { x: number; z: number } | null {
+  if (!draggedRoom.doors || draggedRoom.doors.length === 0) return null;
+  if (!draggedRoom.walls) return null;
+
+  const draggedBounds = roomBounds(draggedRoom.walls);
+  let best: { x: number; z: number; dist: number } | null = null;
+
+  for (const door of draggedRoom.doors) {
+    const edge = detectEdge(draggedBounds, door);
+    if (!edge) continue;
+    const targetEdge = oppositeEdge(edge);
+    const dGlobal = {
+      x: draggedOrigin.x + door.position.x,
+      z: draggedOrigin.z + door.position.z,
+    };
+
+    for (const other of allRooms) {
+      if (other.id === draggedRoom.id) continue;
+      if (!other.doors || !other.walls) continue;
+      const otherBounds = roomBounds(other.walls);
+
+      for (const otherDoor of other.doors) {
+        const oEdge = detectEdge(otherBounds, otherDoor);
+        if (!oEdge || oEdge !== targetEdge) continue;
+        const oGlobal = globalDoorCenter(other, otherDoor);
+
+        const dx = dGlobal.x - oGlobal.x;
+        const dz = dGlobal.z - oGlobal.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+
+        if (dist < SNAP_THRESHOLD && (!best || dist < best.dist)) {
+          best = {
+            x: draggedOrigin.x - dx,
+            z: draggedOrigin.z - dz,
+            dist,
+          };
+        }
+      }
+    }
+  }
+
+  return best ? { x: best.x, z: best.z } : null;
+}
+
+function RoomGroup({
+  room,
+  colors,
+  gb,
+  scale,
+  offsetX,
+  offsetY,
+  editable,
+  onMove,
+}: {
+  room: Room;
+  colors: AppTheme["colors"];
+  gb: ReturnType<typeof globalBounds>;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  editable: boolean;
+  onMove?: (roomId: string, origin: { x: number; z: number }) => void;
+}) {
+  const walls = useMemo(() => room.walls ?? [], [room.walls]);
+  const doors = room.doors ?? [];
+  const windows = room.windows ?? [];
+  const appliances = room.appliances ?? [];
+  const o = room.origin ?? { x: 0, z: 0 };
+
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  const startDX = useSharedValue(0);
+  const startDY = useSharedValue(0);
+  const draggingId = useSharedValue("");
+
+  const localBounds = useMemo(() => roomBounds(walls), [walls]);
+
+  const pan = Gesture.Pan()
+    .enabled(editable && walls.length > 0)
+    .onStart(() => {
+      startDX.value = dragX.value;
+      startDY.value = dragY.value;
+      draggingId.value = room.id;
+    })
+    .onUpdate((e) => {
+      dragX.value = startDX.value + e.translationX;
+      dragY.value = startDY.value + e.translationY;
+    })
+    .onEnd(() => {
+      const newOrigin = {
+        x: o.x + dragX.value / scale,
+        z: o.z - dragY.value / scale,
+      };
+      dragX.value = 0;
+      dragY.value = 0;
+      onMove?.(room.id, newOrigin);
+    });
+
+  const animatedProps = useAnimatedProps(() => ({
+    transform: `translate(${dragX.value}, ${dragY.value})`,
+  }));
+
+  const globalOriginX = o.x;
+  const globalOriginZ = o.z;
+
+  const wallLines = walls.map((w) => {
+    const e = wallEndpoints(w);
+    const a = toScreen(
+      e.x1 + globalOriginX,
+      e.z1 + globalOriginZ,
+      gb,
+      scale,
+      offsetX,
+      offsetY,
+    );
+    const b = toScreen(
+      e.x2 + globalOriginX,
+      e.z2 + globalOriginZ,
+      gb,
+      scale,
+      offsetX,
+      offsetY,
+    );
+    return { ...a, x2: b.sx, y2: b.sy, id: w.id };
+  });
+
+  const floorCorner = (corner: { x: number; z: number }) =>
+    toScreen(
+      corner.x + globalOriginX,
+      corner.z + globalOriginZ,
+      gb,
+      scale,
+      offsetX,
+      offsetY,
+    );
+
+  const floorCorners = [
+    { x: localBounds.minX, z: localBounds.minZ },
+    { x: localBounds.maxX, z: localBounds.minZ },
+    { x: localBounds.maxX, z: localBounds.maxZ },
+    { x: localBounds.minX, z: localBounds.maxZ },
+  ].map(floorCorner);
+
+  const floorPath =
+    floorCorners
+      .map((c, i) => `${i === 0 ? "M" : "L"} ${c.sx} ${c.sy}`)
+      .join(" ") + " Z";
+
+  const roomCenter = {
+    x: globalOriginX + (localBounds.minX + localBounds.maxX) / 2,
+    z: globalOriginZ + (localBounds.minZ + localBounds.maxZ) / 2,
+  };
+  const labelScreen = toScreen(
+    roomCenter.x,
+    roomCenter.z,
+    gb,
+    scale,
+    offsetX,
+    offsetY,
+  );
+
+  return (
+    <GestureDetector gesture={pan}>
+      <AnimatedG animatedProps={animatedProps}>
+        <Path d={floorPath} fill={colors.surfaceContainerHighest} />
+
+        {wallLines.map((w) => (
+          <Line
+            key={w.id}
+            x1={w.sx}
+            y1={w.sy}
+            x2={w.x2}
+            y2={w.y2}
+            stroke={colors.onSurface}
+            strokeWidth={WALL_STROKE}
+            strokeLinecap="round"
+          />
+        ))}
+
+        {doors.map((d) => {
+          const edge = detectEdge(localBounds, d);
+          if (!edge) return null;
+          const along = toScreen(
+            d.position.x + globalOriginX,
+            d.position.z + globalOriginZ,
+            gb,
+            scale,
+            offsetX,
+            offsetY,
+          );
+
+          const dw = d.dimensions.x * scale;
+          const dd = d.dimensions.z * scale;
+
+          const isHorizontal = edge === "bottom" || edge === "top";
+          const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
+          const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
+
+          const gapX = along.sx - gapW / 2;
+          const gapY = along.sy - gapH / 2;
+
+          return (
+            <G key={d.id}>
+              <Rect
+                x={gapX}
+                y={gapY}
+                width={gapW}
+                height={gapH}
+                fill={colors.background}
+              />
+            </G>
+          );
+        })}
+
+        {windows.map((w) => {
+          const edge = detectEdge(localBounds, w);
+          if (!edge) return null;
+          const isHorizontal = edge === "bottom" || edge === "top";
+          const sc = toScreen(
+            w.position.x + globalOriginX,
+            w.position.z + globalOriginZ,
+            gb,
+            scale,
+            offsetX,
+            offsetY,
+          );
+          const ww = w.dimensions.x * scale;
+          const wd = WALL_STROKE * 2;
+          const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
+          const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
+
+          return (
+            <Rect
+              key={w.id}
+              x={wx}
+              y={wy}
+              width={isHorizontal ? ww : wd}
+              height={isHorizontal ? wd : ww}
+              fill={colors.tertiaryContainer}
+              stroke={colors.tertiary}
+              strokeWidth={1}
+              rx={1}
+            />
+          );
+        })}
+
+        {appliances.map((a) => {
+          if (!a.position || !a.dimensions) return null;
+          const sc = toScreen(
+            a.position.x + globalOriginX,
+            a.position.z + globalOriginZ,
+            gb,
+            scale,
+            offsetX,
+            offsetY,
+          );
+          const aw = Math.max(a.dimensions.x * scale, 12);
+          const ah = Math.max(a.dimensions.z * scale, 12);
+          const color = applianceColor(a.name, colors);
+
+          return (
+            <G key={a.id}>
+              <Rect
+                x={sc.sx - aw / 2}
+                y={sc.sy - ah / 2}
+                width={aw}
+                height={ah}
+                fill={color}
+                stroke={colors.outline}
+                strokeWidth={0.5}
+                rx={2}
+              />
+              {aw > 25 && ah > 14 && (
+                <SvgText
+                  x={sc.sx}
+                  y={sc.sy + 4}
+                  textAnchor="middle"
+                  fontSize={Math.min(aw / 5, ah / 2.5, 8)}
+                  fill={colors.onSurface}
+                >
+                  {a.name.length > 8 ? a.name.slice(0, 8) + ".." : a.name}
+                </SvgText>
+              )}
+            </G>
+          );
+        })}
+
+        <SvgText
+          x={labelScreen.sx}
+          y={labelScreen.sy}
+          textAnchor="middle"
+          fontSize={Math.max(12, Math.min(room.name.length > 6 ? 10 : 12, scale * 1.5))}
+          fill={colors.onSurface}
+          opacity={0.5}
+        >
+          {room.name}
+        </SvgText>
+      </AnimatedG>
+    </GestureDetector>
+  );
+}
+
 const FloorPlan: StylableFC<FloorPlanProps> = ({
-  walls,
-  doors = [],
-  windows = [],
-  appliances = [],
+  rooms,
+  editable = false,
+  onRoomMove,
   className,
   style,
 }) => {
@@ -178,7 +517,8 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       zoom.value = newScale;
     });
 
-  const pan = Gesture.Pan()
+  const globalPan = Gesture.Pan()
+    .minPointers(editable ? 2 : 1)
     .onStart(() => {
       startPanX.value = panX.value;
       startPanY.value = panY.value;
@@ -188,17 +528,17 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       panY.value = startPanY.value + e.translationY;
     });
 
-  const composed = Gesture.Simultaneous(pan, pinch);
+  const composed = Gesture.Simultaneous(globalPan, pinch);
 
   const animatedProps = useAnimatedProps(() => ({
     transform: `translate(${panX.value}, ${panY.value}) scale(${zoom.value})`,
   }));
 
-  const bounds = useMemo(() => roomBounds(walls), [walls]);
+  const gb = useMemo(() => globalBounds(rooms), [rooms]);
 
   const transforms = useMemo(() => {
-    const rw = bounds.maxX - bounds.minX;
-    const rd = bounds.maxZ - bounds.minZ;
+    const rw = gb.maxX - gb.minX;
+    const rd = gb.maxZ - gb.minZ;
     const padding = Math.max(rw, rd) * PADDING_RATIO;
     const paddedW = rw + padding * 2;
     const paddedD = rd + padding * 2;
@@ -216,7 +556,18 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     const offsetY = oy + padding * scale;
 
     return { scale, offsetX, offsetY };
-  }, [bounds, size]);
+  }, [gb, size]);
+
+  const handleRoomMove = useCallback(
+    (roomId: string, origin: { x: number; z: number }) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (!room) return;
+
+      const snapped = findDoorSnap(room, origin, rooms);
+      onRoomMove?.(roomId, snapped ?? origin);
+    },
+    [rooms, onRoomMove],
+  );
 
   if (size.width === 0 || size.height === 0) {
     return (
@@ -229,28 +580,6 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   }
 
   const { scale, offsetX, offsetY } = transforms;
-
-  const wallLines = walls.map((w) => {
-    const e = wallEndpoints(w);
-    const a = toScreen(e.x1, e.z1, bounds, scale, offsetX, offsetY);
-    const b = toScreen(e.x2, e.z2, bounds, scale, offsetX, offsetY);
-    return { ...a, x2: b.sx, y2: b.sy, id: w.id };
-  });
-
-  const floorCorner = (corner: { x: number; z: number }) =>
-    toScreen(corner.x, corner.z, bounds, scale, offsetX, offsetY);
-
-  const floorCorners = [
-    { x: bounds.minX, z: bounds.minZ },
-    { x: bounds.maxX, z: bounds.minZ },
-    { x: bounds.maxX, z: bounds.maxZ },
-    { x: bounds.minX, z: bounds.maxZ },
-  ].map(floorCorner);
-
-  const floorPath =
-    floorCorners
-      .map((c, i) => `${i === 0 ? "M" : "L"} ${c.sx} ${c.sy}`)
-      .join(" ") + " Z";
 
   return (
     <GestureDetector gesture={composed}>
@@ -265,128 +594,19 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
           viewBox={`0 0 ${size.width} ${size.height}`}
         >
           <AnimatedG animatedProps={animatedProps}>
-            <Path d={floorPath} fill={colors.surfaceContainerHighest} />
-
-            {wallLines.map((w) => (
-              <Line
-                key={w.id}
-                x1={w.sx}
-                y1={w.sy}
-                x2={w.x2}
-                y2={w.y2}
-                stroke={colors.onSurface}
-                strokeWidth={WALL_STROKE}
-                strokeLinecap="round"
+            {rooms.map((room) => (
+              <RoomGroup
+                key={room.id}
+                room={room}
+                colors={colors}
+                gb={gb}
+                scale={scale}
+                offsetX={offsetX}
+                offsetY={offsetY}
+                editable={editable}
+                onMove={handleRoomMove}
               />
             ))}
-
-            {doors.map((d) => {
-              const edge = detectEdge(bounds, d);
-              if (!edge) return null;
-              const along = toScreen(
-                d.position.x,
-                d.position.z,
-                bounds,
-                scale,
-                offsetX,
-                offsetY,
-              );
-
-              const dw = d.dimensions.x * scale;
-              const dd = d.dimensions.z * scale;
-
-              const isHorizontal = edge === "bottom" || edge === "top";
-              const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
-              const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
-
-              const gapX = along.sx - gapW / 2;
-              const gapY = along.sy - gapH / 2;
-
-              return (
-                <G key={d.id}>
-                  <Rect
-                    x={gapX}
-                    y={gapY}
-                    width={gapW}
-                    height={gapH}
-                    fill={colors.background}
-                  />
-                </G>
-              );
-            })}
-
-            {windows.map((w) => {
-              const edge = detectEdge(bounds, w);
-              if (!edge) return null;
-              const isHorizontal = edge === "bottom" || edge === "top";
-              const sc = toScreen(
-                w.position.x,
-                w.position.z,
-                bounds,
-                scale,
-                offsetX,
-                offsetY,
-              );
-              const ww = w.dimensions.x * scale;
-              const wd = WALL_STROKE * 2;
-              const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
-              const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
-
-              return (
-                <Rect
-                  key={w.id}
-                  x={wx}
-                  y={wy}
-                  width={isHorizontal ? ww : wd}
-                  height={isHorizontal ? wd : ww}
-                  fill={colors.tertiaryContainer}
-                  stroke={colors.tertiary}
-                  strokeWidth={1}
-                  rx={1}
-                />
-              );
-            })}
-
-            {appliances.map((a) => {
-              if (!a.position || !a.dimensions) return null;
-              const sc = toScreen(
-                a.position.x,
-                a.position.z,
-                bounds,
-                scale,
-                offsetX,
-                offsetY,
-              );
-              const aw = Math.max(a.dimensions.x * scale, 12);
-              const ah = Math.max(a.dimensions.z * scale, 12);
-              const color = applianceColor(a.name, colors);
-
-              return (
-                <G key={a.id}>
-                  <Rect
-                    x={sc.sx - aw / 2}
-                    y={sc.sy - ah / 2}
-                    width={aw}
-                    height={ah}
-                    fill={color}
-                    stroke={colors.outline}
-                    strokeWidth={0.5}
-                    rx={2}
-                  />
-                  {aw > 25 && ah > 14 && (
-                    <SvgText
-                      x={sc.sx}
-                      y={sc.sy + 4}
-                      textAnchor="middle"
-                      fontSize={Math.min(aw / 5, ah / 2.5, 8)}
-                      fill={colors.onSurface}
-                    >
-                      {a.name.length > 8 ? a.name.slice(0, 8) + ".." : a.name}
-                    </SvgText>
-                  )}
-                </G>
-              );
-            })}
           </AnimatedG>
         </Svg>
       </View>

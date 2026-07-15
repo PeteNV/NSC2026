@@ -3,6 +3,7 @@ import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import Estimate from "@/components/home/Estimate";
 import FAB from "@/components/wrapper/FAB";
+import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
@@ -12,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { rooms } = usePersistedRooms();
 
   return (
     <View
@@ -28,7 +30,7 @@ export default function HomeScreen() {
 
         {/* Map */}
         <Card className="relative flex-1 !p-0">
-          <Map />
+          <Map rooms={rooms} />
           <FAB
             className="absolute bottom-4 right-4"
             icon={({ size, color }) => (

@@ -50,6 +50,15 @@ export function usePersistedRooms() {
     [],
   );
 
+  const updateRoomOrigin = useCallback(
+    (roomId: string, origin: { x: number; z: number }) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, origin } : r)),
+      );
+    },
+    [],
+  );
+
   const deleteAppliance = useCallback(
     (roomId: string, applianceId: string) => {
       setRooms((prev) =>
@@ -65,5 +74,5 @@ export function usePersistedRooms() {
     [],
   );
 
-  return { rooms, loaded, updateAppliance, deleteAppliance };
+  return { rooms, loaded, updateAppliance, updateRoomOrigin, deleteAppliance };
 }
