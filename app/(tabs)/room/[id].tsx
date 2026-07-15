@@ -6,13 +6,13 @@ import ApplianceListItem from "@/components/room/ApplianceListItem";
 import FAB from "@/components/wrapper/FAB";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
+import type { Appliance } from "@/types/appliance";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { Appliance } from "@/types/appliance";
 
 export default function RoomApplianceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,10 +51,7 @@ export default function RoomApplianceScreen() {
         {/* Map */}
         <View className="gap-4 px-4" style={{ flex: 0.5 }}>
           <Card className="flex-1 !p-0">
-            <Map
-              hideFloorIndicator
-              room={room ?? undefined}
-            />
+            <Map hideFloorIndicator room={room ?? undefined} />
             <FAB
               className="absolute bottom-4 right-4"
               icon={({ size, color }) => (

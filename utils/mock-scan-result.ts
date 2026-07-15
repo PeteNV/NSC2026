@@ -1,4 +1,4 @@
-import type { ScanResult, RoomPlanObject } from "@/modules/room-scanner";
+import type { RoomPlanObject, ScanResult } from "@/modules/room-scanner";
 import type { Appliance } from "@/types/appliance";
 import type { Room } from "@/types/room";
 import { mapScanToRoom } from "./scan-mapper";
@@ -31,11 +31,7 @@ function scanAppliance(
   };
 }
 
-function scanDoor(
-  id: string,
-  x: number,
-  z: number,
-): RoomPlanObject {
+function scanDoor(id: string, x: number, z: number): RoomPlanObject {
   return {
     id,
     category: "Door",
@@ -46,11 +42,7 @@ function scanDoor(
   };
 }
 
-function scanWindow(
-  id: string,
-  x: number,
-  z: number,
-): RoomPlanObject {
+function scanWindow(id: string, x: number, z: number): RoomPlanObject {
   return {
     id,
     category: "Window",
@@ -96,11 +88,11 @@ const LIVING_SCAN = makeScanResult(
   [scanDoor("d-lr-1", 2.5, 0), scanDoor("d-lr-2", 6, 2)],
   [scanWindow("w-lr-1", 1.5, 4.5), scanWindow("w-lr-2", 4.0, 4.5)],
   [
-    scanAppliance("a-sofa", "Sofa", 1.5, 1.5, 2.5, 1),
-    scanAppliance("a-tv", "Television", 2.7, 0.3, 1.2, 0.1),
-    scanAppliance("a-coffee", "Coffee Table", 3, 2.5, 1, 0.6),
-    scanAppliance("a-ac", "Air Conditioner", 5.8, 2, 0.9, 0.3),
-    scanAppliance("a-lamp", "Floor Lamp", 0.4, 3.5, 0.3, 0.3),
+    scanAppliance("a-sofa", "Sofa", 2.75, 2.0, 2.5, 1),
+    scanAppliance("a-tv", "Television", 3.3, 0.35, 1.2, 0.1),
+    scanAppliance("a-coffee", "Coffee Table", 3.5, 2.8, 1, 0.6),
+    scanAppliance("a-ac", "Air Conditioner", 5.45, 2.15, 0.3, 0.9),
+    scanAppliance("a-lamp", "Floor Lamp", 0.55, 3.65, 0.3, 0.3),
   ],
 );
 
@@ -111,11 +103,11 @@ const KITCHEN_SCAN = makeScanResult(
   [scanDoor("d-kt-1", 2, 0)],
   [scanWindow("w-kt-1", 2.5, 3.5)],
   [
-    scanAppliance("a-fridge", "Refrigerator", 0.3, 0.3, 0.8, 0.7),
-    scanAppliance("a-stove", "Stove", 2, 0.3, 0.8, 0.6),
-    scanAppliance("a-microwave", "Microwave", 3.5, 0.5, 0.5, 0.4),
-    scanAppliance("a-sink", "Sink", 1, 3.2, 0.6, 0.5),
-    scanAppliance("a-dishwasher", "Dishwasher", 0.3, 2, 0.6, 0.6),
+    scanAppliance("a-fridge", "Refrigerator", 0.8, 0.7, 0.8, 0.7),
+    scanAppliance("a-stove", "Stove", 2.4, 0.6, 0.8, 0.6),
+    scanAppliance("a-microwave", "Microwave", 3.75, 0.7, 0.5, 0.4),
+    scanAppliance("a-sink", "Sink", 1.3, 3.25, 0.6, 0.5),
+    scanAppliance("a-dishwasher", "Dishwasher", 0.6, 2.3, 0.6, 0.6),
   ],
 );
 
@@ -126,9 +118,9 @@ const BEDROOM_SCAN = makeScanResult(
   [scanDoor("d-bd-1", 2, 0)],
   [scanWindow("w-bd-1", 2.5, 4)],
   [
-    scanAppliance("a-bed", "Bed", 1, 1.5, 2, 2.2),
-    scanAppliance("a-dresser", "Dresser", 3, 0.3, 1.5, 0.6),
-    scanAppliance("a-nightstand", "Nightstand", 0.3, 2.5, 0.5, 0.5),
+    scanAppliance("a-bed", "Bed", 2.0, 2.6, 2, 2.2),
+    scanAppliance("a-dresser", "Dresser", 3.25, 0.6, 1.5, 0.6),
+    scanAppliance("a-nightstand", "Nightstand", 0.55, 2.75, 0.5, 0.5),
   ],
 );
 
@@ -140,8 +132,8 @@ function makeBathroomScan(id: string, doorId: string): ScanResult {
     [scanDoor(doorId, 1.2, 0)],
     [],
     [
-      scanAppliance("a-toilet", "Toilet", 0.8, 0.3, 0.5, 0.6),
-      scanAppliance("a-shower", "Shower", 1.5, 0.3, 0.9, 0.9),
+      scanAppliance("a-toilet", "Toilet", 1.05, 0.6, 0.5, 0.6),
+      scanAppliance("a-shower", "Shower", 1.95, 0.9, 0.9, 0.9),
     ],
   );
 }
@@ -151,22 +143,11 @@ export const MOCK_SCAN_RESULTS: ScanResult[] = [
   KITCHEN_SCAN,
   BEDROOM_SCAN,
   makeBathroomScan("BT1", "d-bt-1"),
-  makeBathroomScan("BT2", "d-bt-2"),
-  makeBathroomScan("BT3", "d-bt-3"),
-  makeBathroomScan("BT4", "d-bt-4"),
 ];
 
-const ROOM_NAMES = [
-  "Living Room",
-  "Kitchen",
-  "Bedroom",
-  "Bathroom",
-  "Bathroom",
-  "Bathroom",
-  "Bathroom",
-];
+const ROOM_NAMES = ["Living Room", "Kitchen", "Bedroom", "Bathroom"];
 
-const ROOM_POWERS = [40, 50, 50, 40, 60, 60, 40];
+const ROOM_POWERS = [40, 50, 50, 40];
 
 const APPLIANCE_POWER: Record<string, { power: number; usage: number }> = {
   "a-sofa": { power: 0, usage: 0 },
@@ -195,7 +176,12 @@ function enrichAppliances(appliances?: Appliance[]): Appliance[] {
 }
 
 export const MOCK_ROOMS: Room[] = MOCK_SCAN_RESULTS.map((scan, i) => {
-  const room = mapScanToRoom(scan, String(i + 1), ROOM_NAMES[i], ROOM_POWERS[i]);
+  const room = mapScanToRoom(
+    scan,
+    String(i + 1),
+    ROOM_NAMES[i],
+    ROOM_POWERS[i],
+  );
   return {
     ...room,
     appliances: enrichAppliances(room.appliances),
@@ -203,7 +189,9 @@ export const MOCK_ROOMS: Room[] = MOCK_SCAN_RESULTS.map((scan, i) => {
 });
 
 export const MOCK_APPLIANCES_BY_ROOM: Record<string, Appliance[]> =
-  Object.fromEntries(MOCK_ROOMS.map((r) => [r.id, enrichAppliances(r.appliances)]));
+  Object.fromEntries(
+    MOCK_ROOMS.map((r) => [r.id, enrichAppliances(r.appliances)]),
+  );
 
 export const MOCK_ALL_APPLIANCES: Appliance[] = Object.values(
   MOCK_APPLIANCES_BY_ROOM,

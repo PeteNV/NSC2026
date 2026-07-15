@@ -1,26 +1,17 @@
 import { useTheme } from "@/hooks/useTheme";
-import { StylableFC } from "@/types/common";
-import type { AppTheme } from "@/types/common";
 import type { Appliance } from "@/types/appliance";
-import type { Wall, DoorWindow } from "@/types/room";
+import type { AppTheme } from "@/types/common";
+import { StylableFC } from "@/types/common";
+import type { DoorWindow, Wall } from "@/types/room";
 import React, { useCallback, useMemo, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import { View } from "react-native";
-import {
-  Gesture,
-  GestureDetector,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedProps,
   useSharedValue,
 } from "react-native-reanimated";
-import Svg, {
-  G,
-  Line,
-  Path,
-  Rect,
-  Text as SvgText,
-} from "react-native-svg";
+import Svg, { G, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -139,10 +130,7 @@ function applianceColorKey(name: string): ThemeColorKey {
   return "surfaceContainerHigh";
 }
 
-function applianceColor(
-  name: string,
-  colors: AppTheme["colors"],
-): string {
+function applianceColor(name: string, colors: AppTheme["colors"]): string {
   return colors[applianceColorKey(name)] ?? colors.surfaceContainerHigh;
 }
 
@@ -180,7 +168,10 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       focalY.value = e.focalY;
     })
     .onUpdate((e) => {
-      const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, startZoom.value * e.scale));
+      const newScale = Math.max(
+        MIN_ZOOM,
+        Math.min(MAX_ZOOM, startZoom.value * e.scale),
+      );
       const ratio = newScale / startZoom.value;
       panX.value = focalX.value - (focalX.value - startPanX.value) * ratio;
       panY.value = focalY.value - (focalY.value - startPanY.value) * ratio;
@@ -256,9 +247,10 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     { x: bounds.minX, z: bounds.maxZ },
   ].map(floorCorner);
 
-  const floorPath = floorCorners
-    .map((c, i) => `${i === 0 ? "M" : "L"} ${c.sx} ${c.sy}`)
-    .join(" ") + " Z";
+  const floorPath =
+    floorCorners
+      .map((c, i) => `${i === 0 ? "M" : "L"} ${c.sx} ${c.sy}`)
+      .join(" ") + " Z";
 
   return (
     <GestureDetector gesture={composed}>
@@ -304,15 +296,11 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
               const dd = d.dimensions.z * scale;
 
               const isHorizontal = edge === "bottom" || edge === "top";
-              const gapW = isHorizontal ? dw : dd;
-              const gapH = isHorizontal ? dd : dw;
+              const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
+              const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
 
-              const gapX = isHorizontal
-                ? along.sx - gapW / 2
-                : along.sx - (edge === "right" ? gapW : 0);
-              const gapY = isHorizontal
-                ? along.sy - gapH / 2
-                : along.sy - gapH / 2;
+              const gapX = along.sx - gapW / 2;
+              const gapY = along.sy - gapH / 2;
 
               return (
                 <G key={d.id}>
@@ -331,11 +319,18 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
               const edge = detectEdge(bounds, w);
               if (!edge) return null;
               const isHorizontal = edge === "bottom" || edge === "top";
-              const sc = toScreen(w.position.x, w.position.z, bounds, scale, offsetX, offsetY);
+              const sc = toScreen(
+                w.position.x,
+                w.position.z,
+                bounds,
+                scale,
+                offsetX,
+                offsetY,
+              );
               const ww = w.dimensions.x * scale;
-              const wd = 4;
+              const wd = WALL_STROKE * 2;
               const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
-              const wy = isHorizontal ? sc.sy - wd / 2 : sc.sy - ww / 2;
+              const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
 
               return (
                 <Rect
@@ -355,8 +350,8 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
             {appliances.map((a) => {
               if (!a.position || !a.dimensions) return null;
               const sc = toScreen(
-                a.position.x + a.dimensions.x / 2,
-                a.position.z + a.dimensions.z / 2,
+                a.position.x,
+                a.position.z,
                 bounds,
                 scale,
                 offsetX,
@@ -386,9 +381,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
                       fontSize={Math.min(aw / 5, ah / 2.5, 8)}
                       fill={colors.onSurface}
                     >
-                      {a.name.length > 8
-                        ? a.name.slice(0, 8) + ".."
-                        : a.name}
+                      {a.name.length > 8 ? a.name.slice(0, 8) + ".." : a.name}
                     </SvgText>
                   )}
                 </G>
