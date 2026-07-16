@@ -190,11 +190,6 @@ function oppositeEdge(edge: Edge): Edge {
   }
 }
 
-function globalDoorCenter(room: Room, door: DoorWindow) {
-  const o = room.origin ?? { x: 0, z: 0 };
-  return { x: o.x + door.position.x, z: o.z + door.position.z };
-}
-
 const EDGE_CYCLE: Edge[] = ["left", "top", "right", "bottom"];
 
 function rotateEdge(edge: Edge, degrees: number): Edge {
@@ -245,7 +240,17 @@ function findDoorSnap(
         if (!oOriginalEdge) continue;
         const oEdge = rotateEdge(oOriginalEdge, otherRot);
         if (oEdge !== targetEdge) continue;
-        const oGlobal = globalDoorCenter(other, otherDoor);
+
+        const otherOrigin = other.origin ?? { x: 0, z: 0 };
+        const otherCX = otherOrigin.x + (otherBounds.minX + otherBounds.maxX) / 2;
+        const otherCZ = otherOrigin.z + (otherBounds.minZ + otherBounds.maxZ) / 2;
+        const oRawGlobal = {
+          x: otherOrigin.x + otherDoor.position.x,
+          z: otherOrigin.z + otherDoor.position.z,
+        };
+        const oGlobal = otherRot
+          ? rotateXZ(oRawGlobal.x, oRawGlobal.z, otherCX, otherCZ, otherRot)
+          : oRawGlobal;
 
         const dx = dGlobal.x - oGlobal.x;
         const dz = dGlobal.z - oGlobal.z;
