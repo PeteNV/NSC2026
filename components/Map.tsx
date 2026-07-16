@@ -3,9 +3,10 @@ import FloorIndicator from "@/components/subcomponents/FloorIndicator";
 import { useTheme } from "@/hooks/useTheme";
 import { StylableFC } from "@/types/common";
 import type { Room } from "@/types/room";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useMemo, useState } from "react";
 import { View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, IconButton, Text } from "react-native-paper";
 
 type ButtonProps = {
   title: string;
@@ -26,11 +27,30 @@ const Map: StylableFC<{
   room?: Room;
   rooms?: Room[];
   editable?: boolean;
+  showEditLock?: boolean;
   selectedFloor?: number;
+  floorCount?: number;
   onFloorChange?: (floor: number) => void;
+  onAddFloor?: () => void;
+  onDeleteFloor?: () => void;
+  onToggleEdit?: () => void;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
-}> = ({ hideFloorIndicator = false, room, rooms, editable, selectedFloor: selectedFloorProp, onFloorChange, onRoomMove, onRoomRotate }) => {
+}> = ({
+  hideFloorIndicator = false,
+  room,
+  rooms,
+  editable,
+  showEditLock = false,
+  selectedFloor: selectedFloorProp,
+  floorCount: floorCountProp,
+  onFloorChange,
+  onAddFloor,
+  onDeleteFloor,
+  onToggleEdit,
+  onRoomMove,
+  onRoomRotate,
+}) => {
   const { colors } = useTheme();
   const [selectedFloorInternal, setSelectedFloorInternal] = useState(1);
   const selectedFloor = selectedFloorProp ?? selectedFloorInternal;
@@ -47,6 +67,9 @@ const Map: StylableFC<{
 
   const hasGeometry = allRooms.some((r) => r.walls && r.walls.length > 0);
 
+  const showFloorTools = onAddFloor || onDeleteFloor;
+  const topInset = hideFloorIndicator ? 0 : 56;
+
   return (
     <View className="relative flex-1 rounded-lg">
       <View
@@ -59,7 +82,7 @@ const Map: StylableFC<{
             editable={editable}
             onRoomMove={onRoomMove}
             onRoomRotate={onRoomRotate}
-            topInset={hideFloorIndicator ? 0 : 56}
+            topInset={topInset}
           />
         ) : (
           <Text
@@ -70,13 +93,61 @@ const Map: StylableFC<{
           </Text>
         )}
       </View>
+
       {!hideFloorIndicator && (
-        <View className="absolute w-full p-4" pointerEvents="box-none">
+        <View className="absolute top-0 w-full p-4" pointerEvents="box-none">
           <FloorIndicator
-            floorCount={4}
+            floorCount={floorCountProp ?? 4}
             selectedFloor={selectedFloor}
             onFloorChange={handleFloorChange}
           />
+        </View>
+      )}
+
+      {(showFloorTools || showEditLock) && (
+        <View
+          className="absolute bottom-0 w-full flex-row items-center justify-between px-4 py-2"
+          pointerEvents="box-none"
+        >
+          <View className="flex-row items-center">
+            {onAddFloor && (
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialIcons name="add" size={size} color={color} />
+                )}
+                iconColor={colors.primary}
+                size={20}
+                onPress={onAddFloor}
+              />
+            )}
+            {onDeleteFloor && (
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialIcons name="delete" size={size} color={color} />
+                )}
+                iconColor={colors.error}
+                size={20}
+                disabled={(floorCountProp ?? 1) <= 1}
+                onPress={onDeleteFloor}
+              />
+            )}
+          </View>
+          {showEditLock && (
+            <IconButton
+              icon={({ size, color }) => (
+                <MaterialIcons
+                  name={editable ? "lock-open" : "lock"}
+                  size={size}
+                  color={color}
+                />
+              )}
+              iconColor={
+                editable ? colors.primary : colors.onSurfaceVariant
+              }
+              size={20}
+              onPress={onToggleEdit}
+            />
+          )}
         </View>
       )}
     </View>

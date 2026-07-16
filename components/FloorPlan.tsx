@@ -371,6 +371,7 @@ function RoomGroup({
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .maxDelay(150)
+    .enabled(editable)
     .onEnd(() => {
       roomRotation.value = (roomRotation.value + 90) % 360;
       onRotate?.(room.id, roomRotation.value);

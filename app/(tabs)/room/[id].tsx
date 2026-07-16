@@ -9,7 +9,7 @@ import { useTheme } from "@/hooks/useTheme";
 import type { Appliance } from "@/types/appliance";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +19,7 @@ export default function RoomApplianceScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { rooms, updateAppliance, deleteAppliance } = usePersistedRooms();
+  const [isEditing, setIsEditing] = useState(false);
 
   const room = rooms.find((r) => r.id === id);
   const roomName = room?.name ?? `Room ${id}`;
@@ -51,7 +52,13 @@ export default function RoomApplianceScreen() {
         {/* Map */}
         <View className="gap-4 px-4" style={{ flex: 0.5 }}>
           <Card className="flex-1 !p-0">
-            <Map hideFloorIndicator room={room ?? undefined} />
+            <Map
+              hideFloorIndicator
+              room={room ?? undefined}
+              editable={isEditing}
+              showEditLock
+              onToggleEdit={() => setIsEditing((v) => !v)}
+            />
             <FAB
               className="absolute bottom-4 right-4"
               icon={({ size, color }) => (

@@ -92,5 +92,25 @@ export function usePersistedRooms() {
     [],
   );
 
-  return { rooms, loaded, updateAppliance, updateRoomOrigin, updateRoomRotation, updateRoomFloor, deleteAppliance };
+  const deleteFloor = useCallback(
+    (floor: number) => {
+      setRooms((prev) =>
+        prev.map((r) => {
+          if (r.floor === floor) return { ...r, floor: undefined };
+          if (r.floor !== undefined && r.floor > floor) return { ...r, floor: r.floor - 1 };
+          return r;
+        }),
+      );
+    },
+    [],
+  );
+
+  const deleteRoom = useCallback(
+    (roomId: string) => {
+      setRooms((prev) => prev.filter((r) => r.id !== roomId));
+    },
+    [],
+  );
+
+  return { rooms, loaded, updateAppliance, updateRoomOrigin, updateRoomRotation, updateRoomFloor, deleteFloor, deleteRoom, deleteAppliance };
 }

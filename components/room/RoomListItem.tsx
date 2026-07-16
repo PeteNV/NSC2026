@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import { Menu, Text, TouchableRipple } from "react-native-paper";
+import { Button, Dialog, Menu, Portal, Text, TouchableRipple } from "react-native-paper";
 
 const RoomListItem: StylableFC<{
   room: Room;
@@ -17,6 +17,7 @@ const RoomListItem: StylableFC<{
 }> = ({ room, selectedFloor, onPress, onDelete, onAssignFloor, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   return (
     <View
@@ -103,13 +104,50 @@ const RoomListItem: StylableFC<{
             )}
             onPress={() => {
               setMenuVisible(false);
-              onDelete?.();
+              setDeleteDialogVisible(true);
             }}
             title="Delete"
             titleStyle={{ color: colors.error }}
           />
         </Menu>
       </View>
+
+      <Portal>
+        <Dialog
+          visible={deleteDialogVisible}
+          onDismiss={() => setDeleteDialogVisible(false)}
+          style={{
+            backgroundColor: colors.surface,
+            maxWidth: 312,
+            alignSelf: "center",
+            width: "100%",
+          }}
+        >
+          <Dialog.Content>
+            <Text variant="bodyLarge" style={{ color: colors.onSurface }}>
+              Are you sure you want to delete &ldquo;{room.name}&rdquo;?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              mode="text"
+              onPress={() => setDeleteDialogVisible(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="text"
+              textColor={colors.error}
+              onPress={() => {
+                setDeleteDialogVisible(false);
+                onDelete?.();
+              }}
+            >
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
