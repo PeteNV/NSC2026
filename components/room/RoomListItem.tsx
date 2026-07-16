@@ -10,9 +10,11 @@ import { Menu, Text, TouchableRipple } from "react-native-paper";
 
 const RoomListItem: StylableFC<{
   room: Room;
+  selectedFloor?: number;
   onPress?: () => void;
   onDelete?: () => void;
-}> = ({ room, onPress, onDelete, className, style }) => {
+  onAssignFloor?: (roomId: string, floor: number) => void;
+}> = ({ room, selectedFloor, onPress, onDelete, onAssignFloor, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -69,6 +71,19 @@ const RoomListItem: StylableFC<{
             </TouchableRipple>
           }
         >
+          {selectedFloor !== undefined && onAssignFloor && (
+            <Menu.Item
+              leadingIcon={({ size, color }) => (
+                <MaterialIcons name="add-location" size={size} color={color} />
+              )}
+              disabled={room.floor === selectedFloor}
+              onPress={() => {
+                setMenuVisible(false);
+                onAssignFloor(room.id, selectedFloor);
+              }}
+              title={room.floor !== undefined ? `Relocate to Floor ${selectedFloor}` : `Add to Floor ${selectedFloor}`}
+            />
+          )}
           <Menu.Item
             leadingIcon={({ size, color }) => (
               <MaterialIcons name="edit" size={size} color={color} />

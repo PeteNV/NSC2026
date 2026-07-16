@@ -26,17 +26,24 @@ const Map: StylableFC<{
   room?: Room;
   rooms?: Room[];
   editable?: boolean;
+  selectedFloor?: number;
+  onFloorChange?: (floor: number) => void;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
-}> = ({ hideFloorIndicator = false, room, rooms, editable, onRoomMove, onRoomRotate }) => {
+}> = ({ hideFloorIndicator = false, room, rooms, editable, selectedFloor: selectedFloorProp, onFloorChange, onRoomMove, onRoomRotate }) => {
   const { colors } = useTheme();
-  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [selectedFloorInternal, setSelectedFloorInternal] = useState(1);
+  const selectedFloor = selectedFloorProp ?? selectedFloorInternal;
+
+  const handleFloorChange = (floor: number) => {
+    setSelectedFloorInternal(floor);
+    onFloorChange?.(floor);
+  };
 
   const allRooms = useMemo(() => {
-    if (rooms && rooms.length > 0) return rooms;
-    if (room) return [room];
-    return [];
-  }, [rooms, room]);
+    const source = rooms && rooms.length > 0 ? rooms : room ? [room] : [];
+    return source.filter((r) => r.floor === selectedFloor);
+  }, [rooms, room, selectedFloor]);
 
   const hasGeometry = allRooms.some((r) => r.walls && r.walls.length > 0);
 
@@ -67,7 +74,7 @@ const Map: StylableFC<{
           <FloorIndicator
             floorCount={4}
             selectedFloor={selectedFloor}
-            onFloorChange={setSelectedFloor}
+            onFloorChange={handleFloorChange}
           />
         </View>
       )}

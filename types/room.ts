@@ -23,6 +23,7 @@ export type Room = {
   windowCount: number;
   origin?: { x: number; z: number };
   rotation?: number;
+  floor?: number;
   walls?: Wall[];
   appliances?: Appliance[];
   doors?: DoorWindow[];
