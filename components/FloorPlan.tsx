@@ -22,6 +22,7 @@ type FloorPlanProps = {
   editable?: boolean;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
+  topInset?: number;
 };
 
 const PADDING_RATIO = 0.12;
@@ -605,6 +606,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   editable = false,
   onRoomMove,
   onRoomRotate,
+  topInset = 0,
   className,
   style,
 }) => {
@@ -679,20 +681,21 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     const paddedW = rw + padding * 2;
     const paddedD = rd + padding * 2;
 
+    const availH = size.height - topInset;
     const scaleX = size.width / paddedW;
-    const scaleZ = size.height / paddedD;
+    const scaleZ = availH / paddedD;
     const scale = Math.min(scaleX, scaleZ) || 1;
 
     const svgW = paddedW * scale;
     const svgH = paddedD * scale;
     const ox = (size.width - svgW) / 2;
-    const oy = (size.height - svgH) / 2;
+    const oy = topInset + (availH - svgH) / 2;
 
     const offsetX = ox + padding * scale;
     const offsetY = oy + padding * scale;
 
     return { scale, offsetX, offsetY };
-  }, [gb, size]);
+  }, [gb, size, topInset]);
 
   const handleRoomMove = useCallback(
     (roomId: string, origin: { x: number; z: number }) => {

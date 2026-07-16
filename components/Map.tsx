@@ -59,6 +59,7 @@ const Map: StylableFC<{
             editable={editable}
             onRoomMove={onRoomMove}
             onRoomRotate={onRoomRotate}
+            topInset={hideFloorIndicator ? 0 : 56}
           />
         ) : (
           <Text
