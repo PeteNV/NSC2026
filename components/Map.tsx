@@ -27,7 +27,8 @@ const Map: StylableFC<{
   rooms?: Room[];
   editable?: boolean;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
-}> = ({ hideFloorIndicator = false, room, rooms, editable, onRoomMove }) => {
+  onRoomRotate?: (roomId: string, rotation: number) => void;
+}> = ({ hideFloorIndicator = false, room, rooms, editable, onRoomMove, onRoomRotate }) => {
   const { colors } = useTheme();
   const [selectedFloor, setSelectedFloor] = useState(1);
 
@@ -50,6 +51,7 @@ const Map: StylableFC<{
             rooms={allRooms}
             editable={editable}
             onRoomMove={onRoomMove}
+            onRoomRotate={onRoomRotate}
           />
         ) : (
           <Text

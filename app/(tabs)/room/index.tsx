@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function RoomEditScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { rooms, updateRoomOrigin } = usePersistedRooms();
+  const { rooms, updateRoomOrigin, updateRoomRotation } = usePersistedRooms();
 
   return (
     <View
@@ -28,7 +28,7 @@ export default function RoomEditScreen() {
       <View className="gap-4 px-4" style={{ flex: 0.6 }}>
         <Card className="!p-0" style={{ flex: 1 }}>
           {rooms.length > 0 && (
-            <Map rooms={rooms} editable onRoomMove={updateRoomOrigin} />
+            <Map rooms={rooms} editable onRoomMove={updateRoomOrigin} onRoomRotate={updateRoomRotation} />
           )}
         </Card>
         <ScanRoomButton onScanRoom={() => {}} onManualEntry={() => {}} />

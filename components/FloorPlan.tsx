@@ -2,11 +2,12 @@ import { useTheme } from "@/hooks/useTheme";
 import type { AppTheme } from "@/types/common";
 import { StylableFC } from "@/types/common";
 import type { DoorWindow, Room, Wall } from "@/types/room";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  type SharedValue,
   useAnimatedProps,
   useSharedValue,
 } from "react-native-reanimated";
@@ -20,6 +21,7 @@ type FloorPlanProps = {
   rooms: Room[];
   editable?: boolean;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
+  onRoomRotate?: (roomId: string, rotation: number) => void;
 };
 
 const PADDING_RATIO = 0.12;
@@ -72,12 +74,18 @@ function roomBounds(walls: Wall[]) {
 function globalBounds(rooms: Room[]) {
   const points = rooms.flatMap((r) => {
     const o = r.origin ?? { x: 0, z: 0 };
+    const rot = r.rotation ?? 0;
     if (!r.walls) return [];
+    const bounds = roomBounds(r.walls);
+    const cx = (bounds.minX + bounds.maxX) / 2;
+    const cz = (bounds.minZ + bounds.maxZ) / 2;
     return r.walls.flatMap((w) => {
       const e = wallEndpoints(w);
+      const p1 = rot ? rotateXZ(e.x1, e.z1, cx, cz, rot) : { x: e.x1, z: e.z1 };
+      const p2 = rot ? rotateXZ(e.x2, e.z2, cx, cz, rot) : { x: e.x2, z: e.z2 };
       return [
-        { x: e.x1 + o.x, z: e.z1 + o.z },
-        { x: e.x2 + o.x, z: e.z2 + o.z },
+        { x: p1.x + o.x, z: p1.z + o.z },
+        { x: p2.x + o.x, z: p2.z + o.z },
       ];
     });
   });
@@ -257,6 +265,46 @@ function findDoorSnap(
   return best ? { x: best.x, z: best.z } : null;
 }
 
+function ApplianceLabel({
+  x,
+  y,
+  text,
+  fontSize,
+  fill,
+  rotation,
+}: {
+  x: number;
+  y: number;
+  text: string;
+  fontSize: number;
+  fill: string;
+  rotation: SharedValue<number>;
+}) {
+  const counterProps = useAnimatedProps(() => ({
+    transform: [
+      { translateX: x },
+      { translateY: y },
+      { rotate: `${-rotation.value}deg` },
+      { translateX: -x },
+      { translateY: -y },
+    ],
+  }));
+
+  return (
+    <AnimatedG animatedProps={counterProps}>
+      <SvgText
+        x={x}
+        y={y}
+        textAnchor="middle"
+        fontSize={fontSize}
+        fill={fill}
+      >
+        {text}
+      </SvgText>
+    </AnimatedG>
+  );
+}
+
 function RoomGroup({
   room,
   colors,
@@ -289,7 +337,7 @@ function RoomGroup({
   const startDX = useSharedValue(0);
   const startDY = useSharedValue(0);
   const draggingId = useSharedValue("");
-  const roomRotation = useSharedValue(0);
+  const roomRotation = useSharedValue(room.rotation ?? 0);
 
   const localBounds = useMemo(() => roomBounds(walls), [walls]);
 
@@ -393,146 +441,156 @@ function RoomGroup({
     ],
   }));
 
+  const textAnimatedProps = useAnimatedProps(() => ({
+    transform: [
+      { translateX: dragX.value },
+      { translateY: dragY.value },
+    ],
+  }));
+
   return (
     <GestureDetector gesture={roomGesture}>
-      <AnimatedG animatedProps={animatedProps}>
-        <Path d={floorPath} fill={colors.surfaceContainerHighest} />
+      <G>
+        <AnimatedG animatedProps={animatedProps}>
+          <Path d={floorPath} fill={colors.surfaceContainerHighest} />
 
-        {wallLines.map((w) => (
-          <Line
-            key={w.id}
-            x1={w.sx}
-            y1={w.sy}
-            x2={w.x2}
-            y2={w.y2}
-            stroke={colors.onSurface}
-            strokeWidth={WALL_STROKE}
-            strokeLinecap="round"
-          />
-        ))}
-
-        {doors.map((d) => {
-          const edge = detectEdge(localBounds, d);
-          if (!edge) return null;
-          const along = toScreen(
-            d.position.x + globalOriginX,
-            d.position.z + globalOriginZ,
-            gb,
-            scale,
-            offsetX,
-            offsetY,
-          );
-
-          const dw = d.dimensions.x * scale;
-          const dd = d.dimensions.z * scale;
-
-          const isHorizontal = edge === "bottom" || edge === "top";
-          const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
-          const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
-
-          const gapX = along.sx - gapW / 2;
-          const gapY = along.sy - gapH / 2;
-
-          return (
-            <G key={d.id}>
-              <Rect
-                x={gapX}
-                y={gapY}
-                width={gapW}
-                height={gapH}
-                fill={colors.background}
-              />
-            </G>
-          );
-        })}
-
-        {windows.map((w) => {
-          const edge = detectEdge(localBounds, w);
-          if (!edge) return null;
-          const isHorizontal = edge === "bottom" || edge === "top";
-          const sc = toScreen(
-            w.position.x + globalOriginX,
-            w.position.z + globalOriginZ,
-            gb,
-            scale,
-            offsetX,
-            offsetY,
-          );
-          const ww = w.dimensions.x * scale;
-          const wd = WALL_STROKE * 2;
-          const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
-          const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
-
-          return (
-            <Rect
+          {wallLines.map((w) => (
+            <Line
               key={w.id}
-              x={wx}
-              y={wy}
-              width={isHorizontal ? ww : wd}
-              height={isHorizontal ? wd : ww}
-              fill={colors.tertiaryContainer}
-              stroke={colors.tertiary}
-              strokeWidth={1}
-              rx={1}
+              x1={w.sx}
+              y1={w.sy}
+              x2={w.x2}
+              y2={w.y2}
+              stroke={colors.onSurface}
+              strokeWidth={WALL_STROKE}
+              strokeLinecap="round"
             />
-          );
-        })}
+          ))}
 
-        {appliances.map((a) => {
-          if (!a.position || !a.dimensions) return null;
-          const sc = toScreen(
-            a.position.x + globalOriginX,
-            a.position.z + globalOriginZ,
-            gb,
-            scale,
-            offsetX,
-            offsetY,
-          );
-          const aw = Math.max(a.dimensions.x * scale, 12);
-          const ah = Math.max(a.dimensions.z * scale, 12);
-          const color = applianceColor(a.name, colors);
+          {doors.map((d) => {
+            const edge = detectEdge(localBounds, d);
+            if (!edge) return null;
+            const along = toScreen(
+              d.position.x + globalOriginX,
+              d.position.z + globalOriginZ,
+              gb,
+              scale,
+              offsetX,
+              offsetY,
+            );
 
-          return (
-            <G key={a.id}>
+            const dw = d.dimensions.x * scale;
+            const dd = d.dimensions.z * scale;
+
+            const isHorizontal = edge === "bottom" || edge === "top";
+            const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
+            const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
+
+            const gapX = along.sx - gapW / 2;
+            const gapY = along.sy - gapH / 2;
+
+            return (
+              <G key={d.id}>
+                <Rect
+                  x={gapX}
+                  y={gapY}
+                  width={gapW}
+                  height={gapH}
+                  fill={colors.background}
+                />
+              </G>
+            );
+          })}
+
+          {windows.map((w) => {
+            const edge = detectEdge(localBounds, w);
+            if (!edge) return null;
+            const isHorizontal = edge === "bottom" || edge === "top";
+            const sc = toScreen(
+              w.position.x + globalOriginX,
+              w.position.z + globalOriginZ,
+              gb,
+              scale,
+              offsetX,
+              offsetY,
+            );
+            const ww = w.dimensions.x * scale;
+            const wd = WALL_STROKE * 2;
+            const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
+            const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
+
+            return (
               <Rect
-                x={sc.sx - aw / 2}
-                y={sc.sy - ah / 2}
-                width={aw}
-                height={ah}
-                fill={color}
-                stroke={colors.outline}
-                strokeWidth={0.5}
-                rx={2}
+                key={w.id}
+                x={wx}
+                y={wy}
+                width={isHorizontal ? ww : wd}
+                height={isHorizontal ? wd : ww}
+                fill={colors.tertiaryContainer}
+                stroke={colors.tertiary}
+                strokeWidth={1}
+                rx={1}
               />
-              {aw > 25 && ah > 14 && (
-                <SvgText
-                  x={sc.sx}
-                  y={sc.sy + 4}
-                  textAnchor="middle"
-                  fontSize={Math.min(aw / 5, ah / 2.5, 8)}
-                  fill={colors.onSurface}
-                >
-                  {a.name.length > 8 ? a.name.slice(0, 8) + ".." : a.name}
-                </SvgText>
-              )}
-            </G>
-          );
-        })}
+            );
+          })}
 
-        <SvgText
-          x={labelScreen.sx}
-          y={labelScreen.sy}
-          textAnchor="middle"
-          fontSize={Math.max(
-            12,
-            Math.min(room.name.length > 6 ? 10 : 12, scale * 1.5),
-          )}
-          fill={colors.onSurface}
-          opacity={0.5}
-        >
-          {room.name}
-        </SvgText>
-      </AnimatedG>
+          {appliances.map((a) => {
+            if (!a.position || !a.dimensions) return null;
+            const sc = toScreen(
+              a.position.x + globalOriginX,
+              a.position.z + globalOriginZ,
+              gb,
+              scale,
+              offsetX,
+              offsetY,
+            );
+            const aw = Math.max(a.dimensions.x * scale, 12);
+            const ah = Math.max(a.dimensions.z * scale, 12);
+            const color = applianceColor(a.name, colors);
+
+            return (
+              <G key={a.id}>
+                <Rect
+                  x={sc.sx - aw / 2}
+                  y={sc.sy - ah / 2}
+                  width={aw}
+                  height={ah}
+                  fill={color}
+                  stroke={colors.outline}
+                  strokeWidth={0.5}
+                  rx={2}
+                />
+                {aw > 25 && ah > 14 && (
+                  <ApplianceLabel
+                    x={sc.sx}
+                    y={sc.sy + 4}
+                    text={a.name.length > 8 ? a.name.slice(0, 8) + ".." : a.name}
+                    fontSize={Math.min(aw / 5, ah / 2.5, 8)}
+                    fill={colors.onSurface}
+                    rotation={roomRotation}
+                  />
+                )}
+              </G>
+            );
+          })}
+        </AnimatedG>
+
+        <AnimatedG animatedProps={textAnimatedProps}>
+          <SvgText
+            x={labelScreen.sx}
+            y={labelScreen.sy}
+            textAnchor="middle"
+            fontSize={Math.max(
+              12,
+              Math.min(room.name.length > 6 ? 10 : 12, scale * 1.5),
+            )}
+            fill={colors.onSurface}
+            opacity={0.5}
+          >
+            {room.name}
+          </SvgText>
+        </AnimatedG>
+      </G>
     </GestureDetector>
   );
 }
@@ -541,12 +599,21 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   rooms,
   editable = false,
   onRoomMove,
+  onRoomRotate,
   className,
   style,
 }) => {
   const { colors } = useTheme();
   const [size, setSize] = useState({ width: 0, height: 0 });
   const roomRotationsRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    rooms.forEach((r) => {
+      if (r.rotation !== undefined && roomRotationsRef.current[r.id] === undefined) {
+        roomRotationsRef.current[r.id] = r.rotation;
+      }
+    });
+  }, [rooms]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -671,6 +738,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
                 onMove={handleRoomMove}
                 onRotate={(id, rot) => {
                   roomRotationsRef.current[id] = rot;
+                  onRoomRotate?.(id, rot);
                 }}
               />
             ))}
