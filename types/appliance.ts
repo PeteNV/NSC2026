@@ -5,5 +5,6 @@ export type Appliance = {
   power: number;
   position?: { x: number; y: number; z: number };
   dimensions?: { x: number; y: number; z: number };
+  rotation?: number;
   source?: "roomplan" | "yolo" | "manual";
 };

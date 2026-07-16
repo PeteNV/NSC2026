@@ -3,11 +3,9 @@ import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
 import ApplianceListItem from "@/components/room/ApplianceListItem";
-import FAB from "@/components/wrapper/FAB";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import type { Appliance } from "@/types/appliance";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { View } from "react-native";
@@ -55,15 +53,10 @@ export default function RoomApplianceScreen() {
             <Map
               hideFloorIndicator
               room={room ?? undefined}
-              editable={isEditing}
-              showEditLock
-              onToggleEdit={() => setIsEditing((v) => !v)}
-            />
-            <FAB
-              className="absolute bottom-4 right-4"
-              icon={({ size, color }) => (
-                <MaterialIcons name="edit" size={size} color={color} />
-              )}
+              roomEditable={false}
+              applianceEditable={isEditing}
+              onToggleApplianceEdit={() => setIsEditing((v) => !v)}
+              onApplianceUpdate={updateAppliance}
             />
           </Card>
         </View>

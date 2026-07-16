@@ -18,6 +18,7 @@ export default function RoomEditScreen() {
   const insets = useSafeAreaInsets();
   const {
     rooms,
+    updateAppliance,
     updateRoomOrigin,
     updateRoomRotation,
     updateRoomFloor,
@@ -25,7 +26,7 @@ export default function RoomEditScreen() {
     deleteRoom,
   } = usePersistedRooms();
   const [selectedFloor, setSelectedFloor] = useState(1);
-  const [isEditing, setIsEditing] = useState(true);
+  const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const [floorCount, setFloorCount] = useState(() => {
@@ -74,16 +75,17 @@ export default function RoomEditScreen() {
           {rooms.length > 0 && (
             <Map
               rooms={rooms}
-              editable={isEditing}
-              showEditLock
+              roomEditable={isRoomEditing}
+              applianceEditable={false}
               selectedFloor={selectedFloor}
               floorCount={floorCount}
               onFloorChange={setSelectedFloor}
               onAddFloor={handleAddFloor}
               onDeleteFloor={openDeleteDialog}
-              onToggleEdit={() => setIsEditing((v) => !v)}
+              onToggleRoomEdit={() => setIsRoomEditing((v) => !v)}
               onRoomMove={updateRoomOrigin}
               onRoomRotate={updateRoomRotation}
+              onApplianceUpdate={updateAppliance}
             />
           )}
         </Card>

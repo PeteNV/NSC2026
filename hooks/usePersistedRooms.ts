@@ -40,7 +40,13 @@ export function usePersistedRooms() {
           if (r.id !== roomId) return r;
           const appliances = (r.appliances ?? []).map((a) =>
             a.id === updated.id
-              ? { ...updated, position: a.position, dimensions: a.dimensions, source: a.source }
+              ? {
+                  ...updated,
+                  position: updated.position ?? a.position,
+                  dimensions: updated.dimensions ?? a.dimensions,
+                  rotation: updated.rotation ?? a.rotation,
+                  source: updated.source ?? a.source,
+                }
               : a,
           );
           return { ...r, appliances };

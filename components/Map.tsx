@@ -27,29 +27,35 @@ const Map: StylableFC<{
   room?: Room;
   rooms?: Room[];
   editable?: boolean;
-  showEditLock?: boolean;
+  roomEditable?: boolean;
+  applianceEditable?: boolean;
   selectedFloor?: number;
   floorCount?: number;
   onFloorChange?: (floor: number) => void;
   onAddFloor?: () => void;
   onDeleteFloor?: () => void;
-  onToggleEdit?: () => void;
+  onToggleRoomEdit?: () => void;
+  onToggleApplianceEdit?: () => void;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
+  onApplianceUpdate?: (roomId: string, appliance: import("@/types/appliance").Appliance) => void;
 }> = ({
   hideFloorIndicator = false,
   room,
   rooms,
   editable,
-  showEditLock = false,
+  roomEditable,
+  applianceEditable,
   selectedFloor: selectedFloorProp,
   floorCount: floorCountProp,
   onFloorChange,
   onAddFloor,
   onDeleteFloor,
-  onToggleEdit,
+  onToggleRoomEdit,
+  onToggleApplianceEdit,
   onRoomMove,
   onRoomRotate,
+  onApplianceUpdate,
 }) => {
   const { colors } = useTheme();
   const [selectedFloorInternal, setSelectedFloorInternal] = useState(1);
@@ -61,8 +67,11 @@ const Map: StylableFC<{
   };
 
   const allRooms = useMemo(() => {
-    const source = rooms && rooms.length > 0 ? rooms : room ? [room] : [];
-    return source.filter((r) => r.floor === selectedFloor);
+    if (rooms && rooms.length > 0) {
+      return rooms.filter((r) => r.floor === selectedFloor);
+    }
+    if (room) return [room];
+    return [];
   }, [rooms, room, selectedFloor]);
 
   const hasGeometry = allRooms.some((r) => r.walls && r.walls.length > 0);
@@ -80,8 +89,11 @@ const Map: StylableFC<{
           <FloorPlan
             rooms={allRooms}
             editable={editable}
+            roomEditable={roomEditable}
+            applianceEditable={applianceEditable}
             onRoomMove={onRoomMove}
             onRoomRotate={onRoomRotate}
+            onApplianceUpdate={onApplianceUpdate}
             topInset={topInset}
           />
         ) : (
@@ -104,7 +116,7 @@ const Map: StylableFC<{
         </View>
       )}
 
-      {(showFloorTools || showEditLock) && (
+      {(showFloorTools || onToggleRoomEdit || onToggleApplianceEdit) && (
         <View
           className="absolute bottom-0 w-full flex-row items-center justify-between px-4 py-2"
           pointerEvents="box-none"
@@ -132,22 +144,40 @@ const Map: StylableFC<{
               />
             )}
           </View>
-          {showEditLock && (
-            <IconButton
-              icon={({ size, color }) => (
-                <MaterialIcons
-                  name={editable ? "lock-open" : "lock"}
-                  size={size}
-                  color={color}
-                />
-              )}
-              iconColor={
-                editable ? colors.primary : colors.onSurfaceVariant
-              }
-              size={20}
-              onPress={onToggleEdit}
-            />
-          )}
+          <View className="flex-row items-center gap-1">
+            {onToggleRoomEdit && (
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialIcons
+                    name={roomEditable ? "lock-open" : "lock"}
+                    size={size}
+                    color={color}
+                  />
+                )}
+                iconColor={
+                  roomEditable ? colors.primary : colors.onSurfaceVariant
+                }
+                size={20}
+                onPress={onToggleRoomEdit}
+              />
+            )}
+            {onToggleApplianceEdit && (
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialIcons
+                    name={applianceEditable ? "lock-open" : "lock"}
+                    size={size}
+                    color={color}
+                  />
+                )}
+                iconColor={
+                  applianceEditable ? colors.primary : colors.onSurfaceVariant
+                }
+                size={20}
+                onPress={onToggleApplianceEdit}
+              />
+            )}
+          </View>
         </View>
       )}
     </View>
