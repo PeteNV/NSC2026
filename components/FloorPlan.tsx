@@ -847,10 +847,22 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     });
   }, [rooms]);
 
+  useEffect(() => {
+    if (size.width === 0) return;
+    runOnUI(() => {
+      if (!(viewRef as any)._viewTag) return;
+      const pos = measure(viewRef);
+      if (pos) {
+        svgPos.value = { x: pos.pageX, y: pos.pageY };
+      }
+    })();
+  }, [size, viewRef, svgPos]);
+
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     setSize({ width, height });
     runOnUI(() => {
+      if (!(viewRef as any)._viewTag) return;
       const pos = measure(viewRef);
       if (pos) {
         svgPos.value = { x: pos.pageX, y: pos.pageY };
