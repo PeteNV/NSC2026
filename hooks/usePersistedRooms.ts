@@ -111,6 +111,13 @@ export function usePersistedRooms() {
     [],
   );
 
+  const addRoom = useCallback(
+    (room: Room) => {
+      setRooms((prev) => [...prev, room]);
+    },
+    [],
+  );
+
   const deleteRoom = useCallback(
     (roomId: string) => {
       setRooms((prev) => prev.filter((r) => r.id !== roomId));
@@ -118,5 +125,5 @@ export function usePersistedRooms() {
     [],
   );
 
-  return { rooms, loaded, updateAppliance, updateRoomOrigin, updateRoomRotation, updateRoomFloor, deleteFloor, deleteRoom, deleteAppliance };
+  return { rooms, loaded, addRoom, updateAppliance, updateRoomOrigin, updateRoomRotation, updateRoomFloor, deleteFloor, deleteRoom, deleteAppliance };
 }

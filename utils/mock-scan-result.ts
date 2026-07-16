@@ -10,7 +10,17 @@ function wall(
   pz: number,
   rotation: number,
 ): ScanResult["walls"][number] {
-  return { id, length, height: 2.7, position: { x: px, z: pz }, rotation };
+  const halfLen = length / 2;
+  return {
+    id,
+    length,
+    height: 2.7,
+    position: {
+      x: px + Math.cos(rotation) * halfLen,
+      z: pz + Math.sin(rotation) * halfLen,
+    },
+    rotation,
+  };
 }
 
 function scanAppliance(
@@ -61,13 +71,15 @@ function makeScanResult(
   windows: ScanResult["windows"],
   appliances: ScanResult["appliances"],
 ): ScanResult {
+  const r90 = Math.PI / 2;
+  const r180 = Math.PI;
   return {
     appliances,
     walls: [
-      wall(`w-${id}-l`, d, 0, 0, 90),
+      wall(`w-${id}-l`, d, 0, 0, r90),
       wall(`w-${id}-t`, w, 0, d, 0),
-      wall(`w-${id}-r`, d, w, d, -90),
-      wall(`w-${id}-b`, w, w, 0, 180),
+      wall(`w-${id}-r`, d, w, d, -r90),
+      wall(`w-${id}-b`, w, w, 0, r180),
     ],
     doors,
     windows,

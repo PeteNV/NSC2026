@@ -80,6 +80,30 @@ function roomBounds(walls: Wall[]) {
   };
 }
 
+function roomPolygon(walls: Wall[]): { x: number; z: number }[] {
+  const eps = 0.02;
+  const points = walls.flatMap((w) => {
+    const e = wallEndpoints(w);
+    return [{ x: e.x1, z: e.z1 }, { x: e.x2, z: e.z2 }];
+  });
+  const unique: { x: number; z: number }[] = [];
+  for (const p of points) {
+    if (
+      !unique.some(
+        (u) => Math.abs(u.x - p.x) < eps && Math.abs(u.z - p.z) < eps,
+      )
+    ) {
+      unique.push(p);
+    }
+  }
+  const cx = unique.reduce((s, p) => s + p.x, 0) / unique.length;
+  const cz = unique.reduce((s, p) => s + p.z, 0) / unique.length;
+  unique.sort(
+    (a, b) => Math.atan2(a.z - cz, a.x - cx) - Math.atan2(b.z - cz, b.x - cx),
+  );
+  return unique;
+}
+
 function globalBounds(rooms: Room[]) {
   const points = rooms.flatMap((r) => {
     const o = r.origin ?? { x: 0, z: 0 };
@@ -649,12 +673,7 @@ function RoomGroup({
       offsetY,
     );
 
-  const floorCorners = [
-    { x: localBounds.minX, z: localBounds.minZ },
-    { x: localBounds.maxX, z: localBounds.minZ },
-    { x: localBounds.maxX, z: localBounds.maxZ },
-    { x: localBounds.minX, z: localBounds.maxZ },
-  ].map(floorCorner);
+  const floorCorners = roomPolygon(walls).map(floorCorner);
 
   const floorPath =
     floorCorners

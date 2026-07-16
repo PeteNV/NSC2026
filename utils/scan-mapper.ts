@@ -8,7 +8,7 @@ import { baselineSeed } from "./energy";
 
 const IGNORED_LABELS = new Set(["dishwasher"]);
 
-function mapAppliance(a: ScanApplianceData): Appliance {
+function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance {
   const isRoomPlan = a.source === "roomplan";
   const name = isRoomPlan ? a.category : a.label;
   if (IGNORED_LABELS.has(name.toLowerCase())) {
@@ -20,6 +20,7 @@ function mapAppliance(a: ScanApplianceData): Appliance {
       position: a.position,
       dimensions: isRoomPlan ? a.dimensions : undefined,
       source: a.source,
+      rotation: roomRotationDeg,
     };
   }
   const { power, usage } = baselineSeed(name);
@@ -31,16 +32,32 @@ function mapAppliance(a: ScanApplianceData): Appliance {
     position: a.position,
     dimensions: isRoomPlan ? a.dimensions : undefined,
     source: a.source,
+    rotation: roomRotationDeg,
   };
 }
 
 function mapWall(w: ScanResult["walls"][number]): Wall {
+  const halfLen = w.length / 2;
   return {
     id: w.id,
     length: w.length,
-    position: w.position,
-    rotation: w.rotation,
+    position: {
+      x: w.position.x - Math.cos(w.rotation) * halfLen,
+      z: w.position.z - Math.sin(w.rotation) * halfLen,
+    },
+    rotation: (w.rotation * 180) / Math.PI,
   };
+}
+
+function computeRoomRotation(walls: ScanResult["walls"]): number {
+  if (walls.length === 0) return 0;
+  const offsets = walls.map((w) => {
+    const deg = (w.rotation * 180) / Math.PI;
+    const norm = ((deg % 90) + 90) % 90;
+    return norm > 45 ? norm - 90 : norm;
+  });
+  const avg = offsets.reduce((a, b) => a + b, 0) / offsets.length;
+  return -Math.round(avg);
 }
 
 function mapDoorWindow(d: ScanResult["doors"][number]): DoorWindow {
@@ -57,6 +74,7 @@ export function mapScanToRoom(
   roomName: string,
   existingPower?: number,
 ): Room {
+  const offset = computeRoomRotation(scan.walls);
   return {
     id: roomId,
     name: roomName,
@@ -65,8 +83,9 @@ export function mapScanToRoom(
     wallCount: scan.metadata.wallCount,
     doorCount: scan.metadata.doorCount,
     windowCount: scan.metadata.windowCount,
+    rotation: -offset,
     walls: scan.walls.map(mapWall),
-    appliances: scan.appliances.map(mapAppliance),
+    appliances: scan.appliances.map((a) => mapAppliance(a, offset)),
     doors: scan.doors.map(mapDoorWindow),
     windows: scan.windows.map(mapDoorWindow),
   };
@@ -74,6 +93,7 @@ export function mapScanToRoom(
 
 export function mapScanAppliances(
   appliances: ScanApplianceData[],
+  roomRotationDeg = 0,
 ): Appliance[] {
-  return appliances.map(mapAppliance);
+  return appliances.map((a) => mapAppliance(a, roomRotationDeg));
 }
