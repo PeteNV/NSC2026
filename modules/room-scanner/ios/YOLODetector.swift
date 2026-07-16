@@ -212,7 +212,7 @@ class YOLODetector {
     private func modelPackageURL() -> URL? {
         // Search likely resource bundles first, then fall back to all loaded bundles
         // This is defensive because packaging can differ between app targets, pods, and frameworks (Xcode)
-        let modelName = "v1_patched"
+        let modelName = "v2_patched"
         let moduleBundle = Bundle(for: YOLODetector.self)
 
         let resourceBundleNames = [

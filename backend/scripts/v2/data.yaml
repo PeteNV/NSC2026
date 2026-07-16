@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 25
+names: ['air_conditioner', 'air_fryer', 'air_purifier', 'blender', 'coffee_machine', 'desktop', 'electric_kettle', 'electric_whisker', 'fan', 'hair_dryer', 'induction_cooker', 'iron', 'laptop', 'light', 'microwave', 'oven', 'printer', 'refrigerator', 'rice_cooker', 'router', 'screen', 'stove', 'toaster', 'vacuum', 'washing_machine']
+
+roboflow:
+  workspace: nattanans-workspace-ksuvp
+  project: appliance2
+  version: 2
+  license: Private
+  url: https://app.roboflow.com/nattanans-workspace-ksuvp/appliance2/2

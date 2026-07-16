@@ -6,9 +6,22 @@ import type { Appliance } from "@/types/appliance";
 import type { Room, Wall, DoorWindow } from "@/types/room";
 import { baselineSeed } from "./energy";
 
+const IGNORED_LABELS = new Set(["dishwasher"]);
+
 function mapAppliance(a: ScanApplianceData): Appliance {
   const isRoomPlan = a.source === "roomplan";
   const name = isRoomPlan ? a.category : a.label;
+  if (IGNORED_LABELS.has(name.toLowerCase())) {
+    return {
+      id: a.id,
+      name,
+      usage: 0,
+      power: 0,
+      position: a.position,
+      dimensions: isRoomPlan ? a.dimensions : undefined,
+      source: a.source,
+    };
+  }
   const { power, usage } = baselineSeed(name);
   return {
     id: a.id,
