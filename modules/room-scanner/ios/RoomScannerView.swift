@@ -225,7 +225,8 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
                     "x": object.transform.columns.3.x,
                     "y": object.transform.columns.3.y,
                     "z": object.transform.columns.3.z
-                ]
+                ],
+                "rotation": atan2(object.transform.columns.0.z, object.transform.columns.0.x)
             ]
         }
 
@@ -243,7 +244,8 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
                     "x": door.transform.columns.3.x,
                     "y": door.transform.columns.3.y,
                     "z": door.transform.columns.3.z
-                ]
+                ],
+                "rotation": atan2(door.transform.columns.0.z, door.transform.columns.0.x)
             ]
         }
 
@@ -261,7 +263,8 @@ public class RoomScannerView: ExpoView, RoomCaptureViewDelegate, ARSessionDelega
                     "x": window.transform.columns.3.x,
                     "y": window.transform.columns.3.y,
                     "z": window.transform.columns.3.z
-                ]
+                ],
+                "rotation": atan2(window.transform.columns.0.z, window.transform.columns.0.x)
             ]
         }
 

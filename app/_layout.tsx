@@ -1,6 +1,7 @@
 import "../global.css";
 
 import { ThemeModeProvider, useThemeMode } from "@/hooks/useThemeMode";
+import { ScanResultProvider } from "@/hooks/useScanResult";
 import {
   DarkTheme,
   DefaultTheme,
@@ -28,9 +29,19 @@ function RootLayoutContent() {
   return (
     <PaperProvider theme={activeTheme}>
       <ThemeProvider value={navTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+        <ScanResultProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="scanner"
+              options={{
+                headerShown: false,
+                presentation: "fullScreenModal",
+                animation: "slide_from_bottom",
+              }}
+            />
+          </Stack>
+        </ScanResultProvider>
       </ThemeProvider>
     </PaperProvider>
   );

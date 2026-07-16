@@ -14,15 +14,16 @@ import {
     Text,
     View,
 } from "react-native";
+import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoomScannerModule, {
     roomScannerNativeModuleName,
 } from "../../modules/room-scanner/src/RoomScannerModule";
-import RoomScannerView, {
+import {
     isRoomScannerViewAvailable,
     roomScannerNativeViewName,
 } from "../../modules/room-scanner/src/RoomScannerView";
-import type { ScanResult } from "../../modules/room-scanner/src/RoomScanner.types";
+import { useScanResult } from "../../hooks/useScanResult";
 import { mapScanToRoom } from "../../utils/scan-mapper";
 import { MOCK_SCAN_RESULTS } from "../../utils/mock-scan-result";
 import type { Room } from "../../types/room";
@@ -31,8 +32,7 @@ const Clipboard = NativeModules.Clipboard;
 
 export default function ScannerTest() {
   const insets = useSafeAreaInsets();
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanData, setScanData] = useState<ScanResult | null>(null);
+  const { lastResult: scanData } = useScanResult();
   const [mappedRoom, setMappedRoom] = useState<Room | null>(null);
   const [copied, setCopied] = useState(false);
   const nativeUnimoduleProxy = NativeModules.NativeUnimoduleProxy;
@@ -67,17 +67,19 @@ export default function ScannerTest() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.scannerContainer}>
+      <ScrollView style={styles.controls} contentContainerStyle={styles.controlsContent}>
         {isSupported ? (
-          <RoomScannerView
-            style={{ flex: 1 }}
-            scanning={isScanning}
-            onScanComplete={(event) => {
-              console.log("Scan Data Received:", event.nativeEvent);
-              setScanData(event.nativeEvent);
-              setIsScanning(false);
-            }}
-          />
+          <View style={styles.supportedBanner}>
+            <Text style={styles.supportedTitle}>LiDAR Scanner Available</Text>
+            <Text style={styles.supportedSub}>
+              This device supports RoomPlan + YOLO object detection.
+            </Text>
+            <View style={{ height: 12 }} />
+            <Button
+              title="Open Full-Screen Scanner"
+              onPress={() => router.push("/scanner")}
+            />
+          </View>
         ) : (
           <View style={styles.unsupportedState}>
             <Text style={styles.unsupportedTitle}>
@@ -89,9 +91,7 @@ export default function ScannerTest() {
             </Text>
           </View>
         )}
-      </View>
 
-      <View style={styles.controls}>
         <View style={styles.debugPanel}>
           <Text style={styles.debugTitle}>Debug</Text>
           <Text style={styles.debugLine}>
@@ -116,11 +116,6 @@ export default function ScannerTest() {
             finalIsSupported: {String(isSupported)}
           </Text>
         </View>
-        <Button
-          title={isScanning ? "Stop Scanning" : "Start Room Scan"}
-          onPress={() => setIsScanning(!isScanning)}
-          disabled={!isSupported}
-        />
 
         <View style={{ height: 8 }} />
 
@@ -130,7 +125,7 @@ export default function ScannerTest() {
           color="#4a90d9"
         />
 
-        <ScrollView style={styles.results}>
+        <View style={styles.results}>
           <View style={styles.resultHeader}>
             <Text style={styles.title}>Scan Result (raw):</Text>
             {scanData && (
@@ -152,21 +147,39 @@ export default function ScannerTest() {
               </Text>
             </>
           )}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
-  scannerContainer: { flex: 2, backgroundColor: "#222" },
-  unsupportedState: {
-    flex: 1,
+  container: { flex: 1, backgroundColor: "#fff" },
+  controls: { flex: 1 },
+  controlsContent: { padding: 20 },
+  supportedBanner: {
+    padding: 16,
+    backgroundColor: "#1a3a1a",
+    borderRadius: 12,
+    marginBottom: 16,
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
+  },
+  supportedTitle: {
+    color: "#4caf50",
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  supportedSub: {
+    color: "#a5d6a7",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  unsupportedState: {
+    padding: 24,
     backgroundColor: "#4b1614",
+    borderRadius: 12,
+    marginBottom: 16,
   },
   unsupportedTitle: {
     color: "#fff",
@@ -181,7 +194,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
-  controls: { flex: 1, backgroundColor: "#fff", padding: 20 },
   debugPanel: {
     marginBottom: 10,
     padding: 10,

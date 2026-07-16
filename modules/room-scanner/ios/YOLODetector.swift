@@ -23,7 +23,21 @@ class YOLODetector {
         let depthMap: CVPixelBuffer?
     }
 
-    private var visionModel: VNCoreMLModel?
+    private var _visionModel: VNCoreMLModel?
+    private var modelLock = os_unfair_lock()
+
+    var visionModel: VNCoreMLModel? {
+        get {
+            os_unfair_lock_lock(&modelLock)
+            defer { os_unfair_lock_unlock(&modelLock) }
+            return _visionModel
+        }
+        set {
+            os_unfair_lock_lock(&modelLock)
+            defer { os_unfair_lock_unlock(&modelLock) }
+            _visionModel = newValue
+        }
+    }
     private var isProcessing = false
 
     // Context for the frame currently being processed. Set on `processFrame`,
@@ -40,8 +54,9 @@ class YOLODetector {
     var onDetectionsFound: (([String: Any]) -> Void)?
 
     init() {
-        // CoreML model loading is deferred - will attempt to load model lazily
-        // For now, just initialize empty to prevent init failures from cascading
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.loadModel()
+        }
     }
 
     var isReadyForNextFrame: Bool {
@@ -56,12 +71,7 @@ class YOLODetector {
         // Retain the AR context alongside the frame so detections can be back-projected to 3D.
         currentContext = context
 
-        // If vision model hasn't been loaded yet, try to load it now
-        if visionModel == nil {
-            print("YOLO: Attempting to load model...")
-            loadModel()
-        }
-
+        // Model is preloaded async on init; skip frame if not yet ready
         guard let visionModel = visionModel else {
             finishProcessing()
             return
@@ -180,10 +190,14 @@ class YOLODetector {
         return copy
     }
 
+    private var modelLoadAttempted = false
+
     private func loadModel() {
-        // For debugging purposes
-        // CoreML models can be shipped either in an already compiled .mlmodelc or .mlpackage
+        guard !modelLoadAttempted else { return }
+        modelLoadAttempted = true
+
         let config = MLModelConfiguration()
+        config.computeUnits = .cpuAndNeuralEngine
 
         guard let modelURL = modelPackageURL() else {
             print("YOLO Error: Could not find model in bundles.")
