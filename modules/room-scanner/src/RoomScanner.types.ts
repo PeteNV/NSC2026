@@ -6,6 +6,7 @@ export type RoomPlanObject = {
   dimensions: { x: number; y: number; z: number };
   confidence: string;
   position: { x: number; y: number; z: number };
+  rotation?: number;
   source: "roomplan";
 };
 

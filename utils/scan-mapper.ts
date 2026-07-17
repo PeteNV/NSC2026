@@ -11,6 +11,10 @@ const IGNORED_LABELS = new Set(["dishwasher"]);
 function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance {
   const isRoomPlan = a.source === "roomplan";
   const name = isRoomPlan ? a.category : a.label;
+  const rotation =
+    isRoomPlan && a.rotation !== undefined
+      ? (-a.rotation * 180) / Math.PI
+      : roomRotationDeg;
   if (IGNORED_LABELS.has(name.toLowerCase())) {
     return {
       id: a.id,
@@ -20,7 +24,7 @@ function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance 
       position: a.position,
       dimensions: isRoomPlan ? a.dimensions : undefined,
       source: a.source,
-      rotation: roomRotationDeg,
+      rotation,
     };
   }
   const { power, usage } = baselineSeed(name);
@@ -32,7 +36,7 @@ function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance 
     position: a.position,
     dimensions: isRoomPlan ? a.dimensions : undefined,
     source: a.source,
-    rotation: roomRotationDeg,
+    rotation,
   };
 }
 
