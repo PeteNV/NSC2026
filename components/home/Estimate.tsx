@@ -3,6 +3,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { summarizeEnergy } from "@/utils/energy";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { router } from "expo-router";
 import React, { useMemo } from "react";
 import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
@@ -99,7 +100,7 @@ export default function Estimate() {
           <MaterialIcons name="search" size={size} color={color} />
         )}
         mode="contained"
-        onPress={() => alert("Button pressed")}
+        onPress={() => router.push("/report")}
       >
         View Full Report
       </Button>
