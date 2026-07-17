@@ -16,7 +16,7 @@ git clone https://github.com/PeteNV/NSC2026.git
 cd NSC2026
 npm install
 npx expo prebuild
-npx expo start --dev-client
+open ios/myEnergy.xcworkspace   # build & run via Xcode (⌘R)
 ```
 
 See full setup guides:

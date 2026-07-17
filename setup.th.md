@@ -66,18 +66,20 @@ npx expo prebuild
 
 ## 5. รันบน iOS
 
-### วิธีที่ 1 — Expo Dev Client (recommended)
+หลังจาก `prebuild` แล้ว ต้อง build ผ่าน Xcode เท่านั้น:
 
 ```bash
-npx expo start --dev-client
+# เปิด Xcode workspace
+open ios/myEnergy.xcworkspace
 ```
 
-เปิด Xcode → เลือก scheme `myEnergy` → กด Run (⌘R)
+ใน Xcode:
+1. เลือกอุปกรณ์ (iPhone หรือ simulator)
+2. กด **⌘R** (Run) เพื่อ build และรัน
 
-### วิธีที่ 2 — Build โดยตรง
-
+หรือจะเปิด Expo dev server ควบคู่ไปด้วยเพื่อ hot reload:
 ```bash
-npx expo run:ios
+npx expo start --dev-client
 ```
 
 ---

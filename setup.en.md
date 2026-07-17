@@ -66,18 +66,20 @@ This creates the `ios/` folder with an Xcode project and runs CocoaPods automati
 
 ## 5. Run on iOS
 
-### Option 1 — Expo Dev Client (recommended)
+After `prebuild`, the project must be built through Xcode:
 
 ```bash
-npx expo start --dev-client
+# open the Xcode workspace
+open ios/myEnergy.xcworkspace
 ```
 
-Open Xcode → select `myEnergy` scheme → press Run (⌘R).
+In Xcode:
+1. Select a target device (your iPhone or a simulator)
+2. Press **⌘R** (Run) to build and launch
 
-### Option 2 — Direct Build
-
+Optionally start the Expo dev server alongside it for hot reload:
 ```bash
-npx expo run:ios
+npx expo start --dev-client
 ```
 
 ---
