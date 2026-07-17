@@ -1,0 +1,129 @@
+import { MOCK_ROOMS } from "@/utils/mock-scan-result";
+import { loadRooms, saveRooms } from "@/utils/storage";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Room } from "@/types/room";
+import type { Appliance } from "@/types/appliance";
+
+export function usePersistedRooms() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const initialised = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const stored = await loadRooms();
+      if (cancelled) return;
+      if (stored && stored.length > 0) {
+        setRooms(stored);
+      } else {
+        setRooms(MOCK_ROOMS);
+      }
+      setLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (!initialised.current) {
+      initialised.current = true;
+      return;
+    }
+    saveRooms(rooms);
+  }, [rooms, loaded]);
+
+  const updateAppliance = useCallback(
+    (roomId: string, updated: Appliance) => {
+      setRooms((prev) =>
+        prev.map((r) => {
+          if (r.id !== roomId) return r;
+          const appliances = (r.appliances ?? []).map((a) =>
+            a.id === updated.id
+              ? {
+                  ...updated,
+                  position: updated.position ?? a.position,
+                  dimensions: updated.dimensions ?? a.dimensions,
+                  rotation: updated.rotation ?? a.rotation,
+                  source: updated.source ?? a.source,
+                }
+              : a,
+          );
+          return { ...r, appliances };
+        }),
+      );
+    },
+    [],
+  );
+
+  const updateRoomOrigin = useCallback(
+    (roomId: string, origin: { x: number; z: number }) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, origin } : r)),
+      );
+    },
+    [],
+  );
+
+  const updateRoomRotation = useCallback(
+    (roomId: string, rotation: number) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, rotation } : r)),
+      );
+    },
+    [],
+  );
+
+  const updateRoomFloor = useCallback(
+    (roomId: string, floor: number) => {
+      setRooms((prev) =>
+        prev.map((r) => (r.id === roomId ? { ...r, floor } : r)),
+      );
+    },
+    [],
+  );
+
+  const deleteAppliance = useCallback(
+    (roomId: string, applianceId: string) => {
+      setRooms((prev) =>
+        prev.map((r) => {
+          if (r.id !== roomId) return r;
+          const appliances = (r.appliances ?? []).filter(
+            (a) => a.id !== applianceId,
+          );
+          return { ...r, appliances, applianceCount: appliances.length };
+        }),
+      );
+    },
+    [],
+  );
+
+  const deleteFloor = useCallback(
+    (floor: number) => {
+      setRooms((prev) =>
+        prev.map((r) => {
+          if (r.floor === floor) return { ...r, floor: undefined };
+          if (r.floor !== undefined && r.floor > floor) return { ...r, floor: r.floor - 1 };
+          return r;
+        }),
+      );
+    },
+    [],
+  );
+
+  const addRoom = useCallback(
+    (room: Room) => {
+      setRooms((prev) => [...prev, room]);
+    },
+    [],
+  );
+
+  const deleteRoom = useCallback(
+    (roomId: string) => {
+      setRooms((prev) => prev.filter((r) => r.id !== roomId));
+    },
+    [],
+  );
+
+  return { rooms, loaded, addRoom, updateAppliance, updateRoomOrigin, updateRoomRotation, updateRoomFloor, deleteFloor, deleteRoom, deleteAppliance };
+}

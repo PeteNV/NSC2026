@@ -1,50 +1,58 @@
-# Welcome to your Expo app 👋
+# myEnergy
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Energy monitoring app with 3D room scanning (LiDAR / iOS RoomPlan).
 
-## Get started
+## Tech Stack
 
-1. Install dependencies
+- **Frontend**: Expo SDK 55, React Native 0.83.6, Expo Router, TypeScript
+- **UI**: react-native-paper (Material Design 3), NativeWind
+- **Native**: iOS RoomPlan + YOLO via custom `room-scanner` module
+- **iOS minimum**: 16.6 (LiDAR required)
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Quick Start
 
 ```bash
-npm run reset-project
+git clone https://github.com/PeteNV/NSC2026.git
+cd NSC2026
+npm install
+npx expo prebuild
+open ios/myEnergy.xcworkspace   # build & run via Xcode (⌘R)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+See full setup guides:
 
-## Learn more
+| Language | File |
+|----------|------|
+| English | [setup.en.md](setup.en.md) |
+| ไทย | [setup.th.md](setup.th.md) |
 
-To learn more about developing your project with Expo, look at the following resources:
+## Project Layout
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+app/              # Expo Router routes
+components/       # UI components
+hooks/            # Custom hooks
+modules/          # Native module (room-scanner)
+  room-scanner/
+    ios/          # Swift (YOLO, RoomPlan)
+    src/          # TS bridge
+    v2_patched.mlpackage  # CoreML model
+assets/           # Images, theme JSON
+backend/          # Supabase + ML scripts
+types/            # TypeScript types
+utils/            # Utility functions
+```
 
-## Join the community
+## Features
 
-Join our community of developers creating universal apps.
+- **3D Room Scanning** — LiDAR + RoomPlan captures walls, doors, windows, and objects
+- **YOLO Object Detection** — Real-time appliance recognition during scanning
+- **Floor Plan Editor** — Drag rooms, move/rotate appliances on an interactive map
+- **Energy Estimation** — Baseline power and usage for scanned appliances
+- **Multi-floor Support** — Up to 5 floors with per-floor room assignment
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Requirements
+
+- **macOS** with Xcode 16+
+- **iPhone 15 Pro / 16 Pro** with LiDAR Scanner
+- **iOS 16.6** or later
