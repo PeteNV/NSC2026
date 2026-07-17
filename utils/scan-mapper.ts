@@ -5,6 +5,7 @@ import type {
 import type { Appliance } from "@/types/appliance";
 import type { Room, Wall, DoorWindow } from "@/types/room";
 import { baselineSeed } from "./energy";
+import { filterScanAppliances } from "./yolo-filter";
 
 const IGNORED_LABELS = new Set(["dishwasher"]);
 
@@ -86,17 +87,20 @@ export function mapScanToRoom(
   existingPower?: number,
 ): Room {
   const offset = computeRoomRotation(scan.walls);
+  const appliances = filterScanAppliances(scan.appliances, scan.walls).map(
+    (a) => mapAppliance(a, offset),
+  );
   return {
     id: roomId,
     name: roomName,
     power: existingPower ?? 0,
-    applianceCount: scan.metadata.applianceCount,
+    applianceCount: appliances.length,
     wallCount: scan.metadata.wallCount,
     doorCount: scan.metadata.doorCount,
     windowCount: scan.metadata.windowCount,
     rotation: -offset,
     walls: scan.walls.map(mapWall),
-    appliances: scan.appliances.map((a) => mapAppliance(a, offset)),
+    appliances,
     doors: scan.doors.map(mapDoorWindow),
     windows: scan.windows.map(mapDoorWindow),
   };
