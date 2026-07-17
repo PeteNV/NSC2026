@@ -120,7 +120,7 @@ const RoomListItem: StylableFC<{
             backgroundColor: colors.surface,
             maxWidth: 312,
             alignSelf: "center",
-            width: "100%",
+            width: "80%",
           }}
         >
           <Dialog.Content>

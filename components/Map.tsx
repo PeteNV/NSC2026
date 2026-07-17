@@ -129,6 +129,7 @@ const Map: StylableFC<{
                 )}
                 iconColor={colors.primary}
                 size={20}
+                disabled={(floorCountProp ?? 1) >= 5}
                 onPress={onAddFloor}
               />
             )}

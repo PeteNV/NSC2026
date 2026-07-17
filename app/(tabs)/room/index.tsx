@@ -15,6 +15,7 @@ import { Button, Dialog, Portal, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MIN_FLOORS = 4;
+const MAX_FLOORS = 5;
 
 export default function RoomEditScreen() {
   const { colors } = useTheme();
@@ -43,6 +44,7 @@ export default function RoomEditScreen() {
   });
 
   const handleAddFloor = useCallback(() => {
+    if (floorCount >= MAX_FLOORS) return;
     const next = floorCount + 1;
     setFloorCount(next);
     if (next <= selectedFloor + 1) {
@@ -141,7 +143,7 @@ export default function RoomEditScreen() {
             backgroundColor: colors.surface,
             maxWidth: 312,
             alignSelf: "center",
-            width: "100%",
+            width: "80%",
           }}
         >
           <Dialog.Content>
