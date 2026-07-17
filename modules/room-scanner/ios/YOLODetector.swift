@@ -293,19 +293,23 @@ class YOLODetector {
 
             // Detection threshold set at above 50% confidence
             if topLabel.confidence > 0.50 {
+                let box = observation.boundingBox
+                let boxArea = box.width * box.height
+                if boxArea > 0.85 { continue }
+
                 var item: [String: Any] = [
                     "label": topLabel.identifier,
                     "confidence": topLabel.confidence,
                     "boundingBox": [
-                        "x": observation.boundingBox.origin.x,
-                        "y": observation.boundingBox.origin.y,
-                        "width": observation.boundingBox.width,
-                        "height": observation.boundingBox.height
+                        "x": box.origin.x,
+                        "y": box.origin.y,
+                        "width": box.width,
+                        "height": box.height
                     ]
                 ]
 
                 // Lift the 2D box into 3D world space using the LiDAR depth for this frame.
-                if let context, let spatial = spatialInfo(for: observation.boundingBox, context: context) {
+                if let context, let spatial = spatialInfo(for: box, context: context) {
                     item["position"] = [
                         "x": spatial.position.x,
                         "y": spatial.position.y,
