@@ -1,7 +1,9 @@
 import { useTheme } from "@/hooks/useTheme";
 import { useThemeMode, type ThemeMode } from "@/hooks/useThemeMode";
+import { useUser } from "@/hooks/useUser";
 import { type IconName, type StylableFC } from "@/types/common";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { router } from "expo-router";
 import { View } from "react-native";
 import {
   Button,
@@ -25,6 +27,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; icon: IconName }[] = [
 const SettingsDialog: StylableFC<Props> = ({ visible, onDismiss }) => {
   const { colors } = useTheme();
   const { mode, setMode } = useThemeMode();
+  const { user } = useUser();
 
   return (
     <Portal>
@@ -70,6 +73,28 @@ const SettingsDialog: StylableFC<Props> = ({ visible, onDismiss }) => {
               ),
             }))}
           />
+
+          {user && (
+            <View className="mt-6">
+              <Text
+                variant="labelLarge"
+                style={{ color: colors.onSurfaceVariant, marginBottom: 8 }}
+              >
+                Profile
+              </Text>
+              <Button
+                mode="outlined"
+                textColor={colors.primary}
+                style={{ borderColor: colors.outlineVariant }}
+                onPress={() => {
+                  onDismiss();
+                  router.push("/onboarding");
+                }}
+              >
+                Redo Onboarding
+              </Button>
+            </View>
+          )}
         </Dialog.Content>
 
         <Dialog.Actions>
