@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import type { Appliance } from "@/types/appliance";
 import { type StylableFC } from "@/types/common";
+import { applianceIcon } from "@/utils/icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -59,7 +60,11 @@ const ApplianceListItem: StylableFC<{
             style,
           ]}
         >
-          <MaterialIcons name="bed" size={24} color={colors.onSurfaceVariant} />
+          <MaterialIcons
+            name={applianceIcon(room.name)}
+            size={24}
+            color={colors.onSurfaceVariant}
+          />
           <View className="flex-1 flex-col">
             <Text variant="bodyLarge">{room.name}</Text>
             <Text

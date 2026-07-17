@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import type { Room } from "@/types/room";
 import { type StylableFC } from "@/types/common";
+import { roomIcon } from "@/utils/icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
 import { router } from "expo-router";
@@ -39,7 +40,7 @@ const RoomListItem: StylableFC<{
         >
           <>
             <MaterialIcons
-              name="bed"
+              name={roomIcon(room.name)}
               size={24}
               color={colors.onSurfaceVariant}
             />
