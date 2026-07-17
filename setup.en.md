@@ -84,15 +84,71 @@ npx expo start --dev-client
 
 ---
 
-## 6. Using the Room Scanner
+## 6. Usage Guide
+
+### Tabs Overview
+
+The app has 5 tabs at the bottom:
+
+| Tab | Icon | Purpose |
+|-----|------|---------|
+| **Home** | 🏠 | Energy dashboard — shows total energy estimate and a read-only map of all rooms |
+| **Room** | 🚪 | Room editor — manage rooms across floors, assign rooms to floors, scan new rooms |
+| **Appliance** | 🍳 | Appliance library — browse, edit, and delete appliances globally |
+| **Report** | 📊 | Energy reports (placeholder — not yet implemented) |
+| **Scanner Test** | 📷 | Launch the LiDAR room scanner for 3D scanning + YOLO detection |
+
+---
+
+### Scanning a Room
 
 1. Go to the **Scanner Test** tab
 2. Tap **Open Full-Screen Scanner**
-3. Tap **Start Room Scan** to begin LiDAR scanning
-4. YOLO detects appliances in real-time
-5. Tap **Stop Scanning** to finish and receive the JSON result
+3. Tap **Start Room Scan** — move your iPhone around the room
+4. YOLO detects appliances (refrigerator, stove, etc.) in real-time
+5. Tap **Stop Scanning** — the result appears as JSON back in the Scanner Test tab
 
-> **Note**: Requires an iPhone 15 Pro or later with a LiDAR Scanner.
+> Requires iPhone 15 Pro or later with LiDAR Scanner.
+
+---
+
+### Room Editor (Room tab)
+
+The Room tab lets you manage rooms on a floor plan:
+
+| Action | How |
+|--------|-----|
+| **Scan new room** | Tap the **Scan Room** button |
+| **Drag a room** | Enable edit mode (lock icon) → drag room on the map |
+| **Rotate a room** | Enable edit mode → double-tap a room |
+| **Add a floor** | Tap the **+** button (bottom bar, up to 5 floors) |
+| **Delete a floor** | Tap the 🗑️ button (bottom bar) |
+| **Assign room to floor** | Tap ⋮ on a room → **Relocate to Floor** / **Add to Floor** |
+| **Delete a room** | Tap ⋮ on a room → **Delete** |
+| **Edit a room** | Tap ⋮ on a room → **Edit** |
+
+---
+
+### Appliance Editor (Room Detail)
+
+Tap a room → appliance list appears:
+
+| Action | How |
+|--------|-----|
+| **Edit appliance** | ⋮ → **Edit** → change name, power (watts), usage (hours/day) |
+| **Delete appliance** | ⋮ → **Delete** → confirm |
+| **Select appliance** | ⋮ → **Toggle select** → dashed blue outline on map |
+| **Move selected appliance** | Drag it on the map |
+| **Rotate selected appliance** | Double-tap it on the map |
+| **Deselect** | Tap the row again or "Deselect" from ⋮ |
+
+---
+
+### Appliance Library (Appliance tab)
+
+A flat list of all appliances. Edit or delete any appliance here — changes reflect everywhere.
+
+> **Note**: Currently edit/delete is wired up but position is managed per-room from the Room Detail map.
 
 ---
 
