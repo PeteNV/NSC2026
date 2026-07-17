@@ -4,63 +4,55 @@ Energy monitoring app with 3D room scanning (LiDAR / iOS RoomPlan).
 
 ## Tech Stack
 
-- **Frontend**: Expo SDK 55, React Native 0.83.6, Expo Router, TypeScript (strict)
-- **UI**: react-native-paper (Material Design 3) with custom Material 3 theme
-- **Backend**: Supabase (local dev in `backend/supabase/`)
+- **Frontend**: Expo SDK 55, React Native 0.83.6, Expo Router, TypeScript
+- **UI**: react-native-paper (Material Design 3), NativeWind
 - **Native**: iOS RoomPlan + YOLO via custom `room-scanner` module
 - **iOS minimum**: 16.6 (LiDAR required)
+
+## Quick Start
+
+```bash
+git clone https://github.com/PeteNV/NSC2026.git
+cd NSC2026
+npm install
+npx expo prebuild
+npx expo start --dev-client
+```
+
+See full setup guides:
+
+| Language | File |
+|----------|------|
+| English | [setup.en.md](setup.en.md) |
+| ไทย | [setup.th.md](setup.th.md) |
 
 ## Project Layout
 
 ```
-frontend/          # Expo/RN app
-├── app/           # Expo Router file-based routes
-├── components/    # Reusable UI components
-├── constants/     # Theme/font constants
-├── hooks/         # Custom hooks
-├── modules/       # Native modules (room-scanner)
-└── assets/        # Images, Material 3 theme JSON
-backend/           # Supabase config + ML scripts
-├── supabase/      # Local Supabase config (config.toml)
-└── scripts/       # Python scripts, ML models (YOLO)
+app/              # Expo Router routes
+components/       # UI components
+hooks/            # Custom hooks
+modules/          # Native module (room-scanner)
+  room-scanner/
+    ios/          # Swift (YOLO, RoomPlan)
+    src/          # TS bridge
+    v2_patched.mlpackage  # CoreML model
+assets/           # Images, theme JSON
+backend/          # Supabase + ML scripts
+types/            # TypeScript types
+utils/            # Utility functions
 ```
 
-## Development
+## Features
 
-```bash
-# Install dependencies (root for frontend)
-cd frontend && npm install
+- **3D Room Scanning** — LiDAR + RoomPlan captures walls, doors, windows, and objects
+- **YOLO Object Detection** — Real-time appliance recognition during scanning
+- **Floor Plan Editor** — Drag rooms, move/rotate appliances on an interactive map
+- **Energy Estimation** — Baseline power and usage for scanned appliances
+- **Multi-floor Support** — Up to 5 floors with per-floor room assignment
 
-# Start Expo dev server
-cd frontend && npx expo start
-# Press 'w' for web, 'i' for iOS simulator
+## Requirements
 
-# Android/iOS native builds
-npx expo run:android   # in frontend/
-npm expo run:ios      # in frontend/
-
-# Lint
-cd frontend && npm run lint
-
-# Supabase local dev (from backend/)
-cd backend && npx supabase start
-```
-
-## Key Commands
-
-| Command | Purpose |
-|---------|---------|
-| `npm expo run --dev-client` | Start Expo dev server |
-| `npx expo run:ios` | Build & run on iOS simulator |
-| `npm expo run:android` | Build & run on Android |
-| `npm run lint` | ESLint via `expo lint` |
-| `npm expo start` | Start Expo for web |
-
-## Architecture Notes
-
-- File-based routing via `app/` directory (Expo Router)
-- Native tabs via `expo-router/unstable-native-tabs`
-- Path alias `@/*` maps to `frontend/*`
-- Custom native module `room-scanner` in `frontend/modules/room-scanner/`
-- Material 3 theme colors in `assets/material-theme.json`
-- New Architecture enabled (`newArchEnabled: true`)
+- **macOS** with Xcode 16+
+- **iPhone 15 Pro / 16 Pro** with LiDAR Scanner
+- **iOS 16.6** or later
