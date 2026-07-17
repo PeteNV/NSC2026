@@ -15,6 +15,11 @@ function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance 
     isRoomPlan && a.rotation !== undefined
       ? (-a.rotation * 180) / Math.PI
       : roomRotationDeg;
+  const dimensions = isRoomPlan
+    ? a.dimensions
+    : a.realSize
+      ? { x: a.realSize.width, y: a.realSize.height, z: a.realSize.width }
+      : undefined;
   if (IGNORED_LABELS.has(name.toLowerCase())) {
     return {
       id: a.id,
@@ -22,7 +27,7 @@ function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance 
       usage: 0,
       power: 0,
       position: a.position,
-      dimensions: isRoomPlan ? a.dimensions : undefined,
+      dimensions,
       source: a.source,
       rotation,
     };
@@ -34,7 +39,7 @@ function mapAppliance(a: ScanApplianceData, roomRotationDeg: number): Appliance 
     usage,
     power,
     position: a.position,
-    dimensions: isRoomPlan ? a.dimensions : undefined,
+    dimensions,
     source: a.source,
     rotation,
   };
@@ -69,6 +74,8 @@ function mapDoorWindow(d: ScanResult["doors"][number]): DoorWindow {
     id: d.id,
     position: d.position,
     dimensions: d.dimensions,
+    rotation:
+      d.rotation !== undefined ? (-d.rotation * 180) / Math.PI : undefined,
   };
 }
 

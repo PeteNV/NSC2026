@@ -11,6 +11,7 @@ export type DoorWindow = {
   id: string;
   position: { x: number; y: number; z: number };
   dimensions: { x: number; y: number; z: number };
+  rotation?: number;
 };
 
 export type Room = {

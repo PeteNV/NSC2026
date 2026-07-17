@@ -210,26 +210,21 @@ function applianceColor(name: string, colors: AppTheme["colors"]): string {
   return colors[applianceColorKey(name)] ?? colors.surfaceContainerHigh;
 }
 
-function oppositeEdge(edge: Edge): Edge {
-  switch (edge) {
-    case "bottom":
-      return "top";
-    case "top":
-      return "bottom";
-    case "left":
-      return "right";
-    case "right":
-      return "left";
-  }
+const SNAP_ANGLE_TOLERANCE = 20;
+
+function doorFacingDeg(
+  bounds: ReturnType<typeof roomBounds>,
+  door: DoorWindow,
+): number | null {
+  if (door.rotation !== undefined) return door.rotation;
+  const edge = detectEdge(bounds, door);
+  if (!edge) return null;
+  return edge === "bottom" || edge === "top" ? 0 : 90;
 }
 
-const EDGE_CYCLE: Edge[] = ["left", "top", "right", "bottom"];
-
-function rotateEdge(edge: Edge, degrees: number): Edge {
-  if (!degrees) return edge;
-  const steps = Math.round(((degrees % 360) + 360) % 360 / 90);
-  const idx = EDGE_CYCLE.indexOf(edge);
-  return EDGE_CYCLE[(idx + steps) % 4];
+function anglesParallel(a: number, b: number): boolean {
+  const diff = (((a - b) % 180) + 180) % 180;
+  return diff < SNAP_ANGLE_TOLERANCE || diff > 180 - SNAP_ANGLE_TOLERANCE;
 }
 
 function findDoorSnap(
@@ -249,10 +244,9 @@ function findDoorSnap(
   let best: { x: number; z: number; dist: number } | null = null;
 
   for (const door of draggedRoom.doors) {
-    const originalEdge = detectEdge(draggedBounds, door);
-    if (!originalEdge) continue;
-    const edge = rotateEdge(originalEdge, draggedRot);
-    const targetEdge = oppositeEdge(edge);
+    const dAngle = doorFacingDeg(draggedBounds, door);
+    if (dAngle === null) continue;
+    const dGlobalAngle = dAngle + draggedRot;
 
     const rawGlobal = {
       x: draggedOrigin.x + door.position.x,
@@ -269,10 +263,9 @@ function findDoorSnap(
       const otherRot = rotations[other.id] ?? 0;
 
       for (const otherDoor of other.doors) {
-        const oOriginalEdge = detectEdge(otherBounds, otherDoor);
-        if (!oOriginalEdge) continue;
-        const oEdge = rotateEdge(oOriginalEdge, otherRot);
-        if (oEdge !== targetEdge) continue;
+        const oAngle = doorFacingDeg(otherBounds, otherDoor);
+        if (oAngle === null) continue;
+        if (!anglesParallel(dGlobalAngle, oAngle + otherRot)) continue;
 
         const otherOrigin = other.origin ?? { x: 0, z: 0 };
         const otherCX = otherOrigin.x + (otherBounds.minX + otherBounds.maxX) / 2;
@@ -703,86 +696,6 @@ function RoomGroup({
         <AnimatedG animatedProps={animatedProps}>
           <Path d={floorPath} fill={colors.surfaceContainerHighest} />
 
-          {wallLines.map((w) => (
-            <Line
-              key={w.id}
-              x1={w.sx}
-              y1={w.sy}
-              x2={w.x2}
-              y2={w.y2}
-              stroke={colors.onSurface}
-              strokeWidth={WALL_STROKE}
-              strokeLinecap="round"
-            />
-          ))}
-
-          {doors.map((d) => {
-            const edge = detectEdge(localBounds, d);
-            if (!edge) return null;
-            const along = toScreen(
-              d.position.x + globalOriginX,
-              d.position.z + globalOriginZ,
-              gb,
-              scale,
-              offsetX,
-              offsetY,
-            );
-
-            const dw = d.dimensions.x * scale;
-            const dd = d.dimensions.z * scale;
-
-            const isHorizontal = edge === "bottom" || edge === "top";
-            const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
-            const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
-
-            const gapX = along.sx - gapW / 2;
-            const gapY = along.sy - gapH / 2;
-
-            return (
-              <G key={d.id}>
-                <Rect
-                  x={gapX}
-                  y={gapY}
-                  width={gapW}
-                  height={gapH}
-                  fill={colors.background}
-                />
-              </G>
-            );
-          })}
-
-          {windows.map((w) => {
-            const edge = detectEdge(localBounds, w);
-            if (!edge) return null;
-            const isHorizontal = edge === "bottom" || edge === "top";
-            const sc = toScreen(
-              w.position.x + globalOriginX,
-              w.position.z + globalOriginZ,
-              gb,
-              scale,
-              offsetX,
-              offsetY,
-            );
-            const ww = w.dimensions.x * scale;
-            const wd = WALL_STROKE * 2;
-            const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
-            const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
-
-            return (
-              <Rect
-                key={w.id}
-                x={wx}
-                y={wy}
-                width={isHorizontal ? ww : wd}
-                height={isHorizontal ? wd : ww}
-                fill={colors.tertiaryContainer}
-                stroke={colors.tertiary}
-                strokeWidth={1}
-                rx={1}
-              />
-            );
-          })}
-
           {appliances.map((a) => {
             if (!a.position || !a.dimensions) return null;
             const sc = toScreen(
@@ -815,6 +728,121 @@ function RoomGroup({
                 isDragging={draggingApplianceId}
                 dragDX={applDragDX}
                 dragDY={applDragDY}
+              />
+            );
+          })}
+
+          {wallLines.map((w) => (
+            <Line
+              key={w.id}
+              x1={w.sx}
+              y1={w.sy}
+              x2={w.x2}
+              y2={w.y2}
+              stroke={colors.onSurface}
+              strokeWidth={WALL_STROKE}
+              strokeLinecap="round"
+            />
+          ))}
+
+          {doors.map((d) => {
+            const along = toScreen(
+              d.position.x + globalOriginX,
+              d.position.z + globalOriginZ,
+              gb,
+              scale,
+              offsetX,
+              offsetY,
+            );
+
+            const dw = d.dimensions.x * scale;
+            const dd = d.dimensions.z * scale;
+
+            if (d.rotation !== undefined) {
+              const gapW = dw + WALL_STROKE * 2;
+              const gapH = dd + WALL_STROKE * 2;
+              return (
+                <Rect
+                  key={d.id}
+                  x={along.sx - gapW / 2}
+                  y={along.sy - gapH / 2}
+                  width={gapW}
+                  height={gapH}
+                  fill={colors.background}
+                  transform={`rotate(${d.rotation} ${along.sx} ${along.sy})`}
+                />
+              );
+            }
+
+            const edge = detectEdge(localBounds, d);
+            if (!edge) return null;
+
+            const isHorizontal = edge === "bottom" || edge === "top";
+            const gapW = (isHorizontal ? dw : dd) + WALL_STROKE * 2;
+            const gapH = (isHorizontal ? dd : dw) + WALL_STROKE * 2;
+
+            const gapX = along.sx - gapW / 2;
+            const gapY = along.sy - gapH / 2;
+
+            return (
+              <G key={d.id}>
+                <Rect
+                  x={gapX}
+                  y={gapY}
+                  width={gapW}
+                  height={gapH}
+                  fill={colors.background}
+                />
+              </G>
+            );
+          })}
+
+          {windows.map((w) => {
+            const sc = toScreen(
+              w.position.x + globalOriginX,
+              w.position.z + globalOriginZ,
+              gb,
+              scale,
+              offsetX,
+              offsetY,
+            );
+            const ww = w.dimensions.x * scale;
+            const wd = WALL_STROKE * 2;
+
+            if (w.rotation !== undefined) {
+              return (
+                <Rect
+                  key={w.id}
+                  x={sc.sx - ww / 2}
+                  y={sc.sy - wd / 2}
+                  width={ww}
+                  height={wd}
+                  fill={colors.tertiaryContainer}
+                  stroke={colors.tertiary}
+                  strokeWidth={1}
+                  rx={1}
+                  transform={`rotate(${w.rotation} ${sc.sx} ${sc.sy})`}
+                />
+              );
+            }
+
+            const edge = detectEdge(localBounds, w);
+            if (!edge) return null;
+            const isHorizontal = edge === "bottom" || edge === "top";
+            const wx = isHorizontal ? sc.sx - ww / 2 : sc.sx - wd / 2;
+            const wy = sc.sy - (isHorizontal ? wd : ww) / 2;
+
+            return (
+              <Rect
+                key={w.id}
+                x={wx}
+                y={wy}
+                width={isHorizontal ? ww : wd}
+                height={isHorizontal ? wd : ww}
+                fill={colors.tertiaryContainer}
+                stroke={colors.tertiary}
+                strokeWidth={1}
+                rx={1}
               />
             );
           })}
