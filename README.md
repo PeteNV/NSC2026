@@ -2,6 +2,9 @@
 
 Energy monitoring app with 3D room scanning (LiDAR / iOS RoomPlan).
 
+การพัฒนาการตรวจจับเครื่องใช้ไฟฟ้าและการประมาณค่าการใช้พลังงานในสภาพแวดล้อม
+ที่อยู่อาศัยแบบบูรณาการโดยไลดาร์
+
 ## Tech Stack
 
 - **Frontend**: Expo SDK 55, React Native 0.83.6, Expo Router, TypeScript
