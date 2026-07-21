@@ -6,9 +6,7 @@ import RoomListItem from "@/components/room/RoomListItem";
 import ScanRoomButton from "@/components/room/ScanRoomButton";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
-import type { ScanResult } from "@/modules/room-scanner";
-import outputJson from "@/utils/output.json";
-import { mapScanToRoom } from "@/utils/scan-mapper";
+import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
@@ -22,7 +20,6 @@ export default function RoomEditScreen() {
   const insets = useSafeAreaInsets();
   const {
     rooms,
-    addRoom,
     updateAppliance,
     updateRoomOrigin,
     updateRoomRotation,
@@ -33,7 +30,6 @@ export default function RoomEditScreen() {
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [scanLoading, setScanLoading] = useState(false);
 
   const [floorCount, setFloorCount] = useState(() => {
     const max = rooms.reduce(
@@ -67,15 +63,9 @@ export default function RoomEditScreen() {
     });
   }, [deleteFloor, selectedFloor, floorCount]);
 
-  const handleScanRoom = useCallback(async () => {
-    setScanLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    const scanData = outputJson as unknown as ScanResult;
-    const roomId = String(Date.now());
-    const room = mapScanToRoom(scanData, roomId, "Scanned Room");
-    addRoom(room);
-    setScanLoading(false);
-  }, [addRoom]);
+  const handleScanRoom = useCallback(() => {
+    router.push("/scanner");
+  }, []);
 
   return (
     <View
@@ -106,7 +96,7 @@ export default function RoomEditScreen() {
             />
           )}
         </Card>
-        <ScanRoomButton onScanRoom={handleScanRoom} onManualEntry={() => {}} loading={scanLoading} />
+        <ScanRoomButton onScanRoom={handleScanRoom} onManualEntry={() => {}} />
       </View>
 
       {/* Room List */}
