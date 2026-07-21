@@ -21,12 +21,14 @@ const ApplianceListItem: StylableFC<{
   onPress?: () => void;
   onEdit?: (data: Appliance) => void;
   onDelete?: () => void;
-}> = ({ room, onPress, onEdit, onDelete, className, style }) => {
+  selected?: boolean;
+  onToggleSelect?: () => void;
+}> = ({ room, onPress, onEdit, onDelete, selected, onToggleSelect, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-  const pendingAction = useRef<"edit" | "delete" | null>(null);
+  const pendingAction = useRef<"edit" | "delete" | "select" | null>(null);
 
   useEffect(() => {
     if (!menuVisible && pendingAction.current) {
@@ -34,10 +36,11 @@ const ApplianceListItem: StylableFC<{
       pendingAction.current = null;
       requestAnimationFrame(() => {
         if (action === "edit") setDialogVisible(true);
-        else setDeleteDialogVisible(true);
+        else if (action === "delete") setDeleteDialogVisible(true);
+        else if (action === "select") onToggleSelect?.();
       });
     }
-  }, [menuVisible]);
+  }, [menuVisible, onToggleSelect]);
 
   const handleMenuDismiss = useCallback(() => {
     setMenuVisible(false);
@@ -46,16 +49,21 @@ const ApplianceListItem: StylableFC<{
   return (
     <>
       <TouchableRipple
-        onPress={() => console.log("Pressed")}
+        onPress={onToggleSelect ?? onPress}
         className={clsx("rounded-xl", className)}
       >
-        <View
-          className="h-20 flex-row items-center justify-between gap-4 rounded
-            px-4"
+          <View
+            className="h-20 flex-row items-center justify-between gap-4 rounded
+              px-4"
           style={[
             {
               backgroundColor: colors.surface,
               borderColor: colors.outlineVariant,
+            },
+            selected && {
+              borderColor: colors.primary,
+              borderWidth: 2,
+              backgroundColor: colors.primaryContainer,
             },
             style,
           ]}
@@ -101,6 +109,18 @@ const ApplianceListItem: StylableFC<{
                 </TouchableRipple>
               }
             >
+              {onToggleSelect && (
+                <Menu.Item
+                  leadingIcon={({ size, color }) => (
+                    <MaterialIcons name="touch-app" size={size} color={color} />
+                  )}
+                  onPress={() => {
+                    pendingAction.current = "select";
+                    setMenuVisible(false);
+                  }}
+                  title={selected ? "Deselect" : "Toggle select"}
+                />
+              )}
               <Menu.Item
                 leadingIcon={({ size, color }) => (
                   <MaterialIcons name="edit" size={size} color={color} />

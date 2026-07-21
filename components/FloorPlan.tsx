@@ -27,6 +27,7 @@ type FloorPlanProps = {
   editable?: boolean;
   roomEditable?: boolean;
   applianceEditable?: boolean;
+  selectedApplianceId?: string;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
   onApplianceUpdate?: (roomId: string, appliance: Appliance) => void;
@@ -414,6 +415,26 @@ function AnimatedApplianceGroup({
   );
 }
 
+function ApplianceSelectionHighlight({
+  id, cx, cy, aw, ah, color, isDragging, dragDX, dragDY,
+}: {
+  id: string; cx: number; cy: number; aw: number; ah: number; color: string;
+  isDragging: SharedValue<string>; dragDX: SharedValue<number>; dragDY: SharedValue<number>;
+}) {
+  const animatedProps = useAnimatedProps(() => ({
+    transform: [
+      { translateX: cx + (isDragging.value === id ? dragDX.value : 0) },
+      { translateY: cy + (isDragging.value === id ? dragDY.value : 0) },
+    ],
+  }));
+  return (
+    <AnimatedG animatedProps={animatedProps}>
+      <Rect x={-aw / 2 - 2} y={-ah / 2 - 2} width={aw + 4} height={ah + 4}
+        fill="none" stroke={color} strokeWidth={2.5} rx={4} strokeDasharray="6,3" />
+    </AnimatedG>
+  );
+}
+
 function RoomGroup({
   room,
   colors,
@@ -421,13 +442,13 @@ function RoomGroup({
   scale,
   offsetX,
   offsetY,
-  editable,
-  roomEditable: roomEditableProp,
-  applianceEditable: applianceEditableProp,
-  svgPos,
-  onMove,
-  onRotate,
-  onApplianceUpdate,
+  dragDX,
+  dragDY,
+  draggingRoomId,
+  draggingApplianceId,
+  applDragDX,
+  applDragDY,
+  selectedApplianceId,
 }: {
   room: Room;
   colors: AppTheme["colors"];
@@ -435,13 +456,13 @@ function RoomGroup({
   scale: number;
   offsetX: number;
   offsetY: number;
-  editable: boolean;
-  roomEditable?: boolean;
-  applianceEditable?: boolean;
-  svgPos: SharedValue<{ x: number; y: number }>;
-  onMove?: (roomId: string, origin: { x: number; z: number }) => void;
-  onRotate?: (roomId: string, rotation: number) => void;
-  onApplianceUpdate?: (roomId: string, appliance: Appliance) => void;
+  dragDX: SharedValue<number>;
+  dragDY: SharedValue<number>;
+  draggingRoomId: SharedValue<string>;
+  draggingApplianceId: SharedValue<string>;
+  applDragDX: SharedValue<number>;
+  applDragDY: SharedValue<number>;
+  selectedApplianceId?: string;
 }) {
   const walls = useMemo(() => room.walls ?? [], [room.walls]);
   const doors = room.doors ?? [];
@@ -449,21 +470,9 @@ function RoomGroup({
   const appliances = room.appliances ?? [];
   const o = room.origin ?? { x: 0, z: 0 };
 
-  const dragX = useSharedValue(0);
-  const dragY = useSharedValue(0);
-  const startDX = useSharedValue(0);
-  const startDY = useSharedValue(0);
-  const draggingId = useSharedValue("");
   const roomRotation = useSharedValue(room.rotation ?? 0);
-  const draggingApplianceId = useSharedValue("");
-  const applDragDX = useSharedValue(0);
-  const applDragDY = useSharedValue(0);
-  const applStartPos = useSharedValue({ x: 0, z: 0 });
-  const isRoomDrag = useSharedValue(false);
 
   const localBounds = useMemo(() => roomBounds(walls), [walls]);
-  const roomEditable = roomEditableProp ?? editable;
-  const applianceEditable = applianceEditableProp ?? editable;
 
   const labelScreen = useMemo(() => {
     const cx = o.x + (localBounds.minX + localBounds.maxX) / 2;
@@ -503,134 +512,6 @@ function RoomGroup({
     },
     [appliances, o.x, o.z, gb, scale, offsetX, offsetY, labelScreen, room.rotation],
   );
-
-  const pan = Gesture.Pan()
-    .enabled((roomEditable || applianceEditable) && walls.length > 0)
-    .onStart((e) => {
-      const lx = e.absoluteX - svgPos.value.x;
-      const ly = e.absoluteY - svgPos.value.y;
-      let hit: (typeof applianceHitBoxes)[number] | undefined;
-      if (applianceEditable && applianceHitBoxes.length > 0) {
-        hit = applianceHitBoxes.find(
-          (b) =>
-            lx >= b.x &&
-            lx <= b.x + b.w &&
-            ly >= b.y &&
-            ly <= b.y + b.h,
-        );
-        if (!hit) {
-          hit = applianceHitBoxes.reduce(
-            (best, b) => {
-              const dx = lx - (b.x + b.w / 2);
-              const dy = ly - (b.y + b.h / 2);
-              const dist = dx * dx + dy * dy;
-              return dist < best.dist ? { box: b, dist } : best;
-            },
-            { box: applianceHitBoxes[0], dist: Infinity },
-          ).box;
-        }
-      }
-      if (hit) {
-        draggingApplianceId.value = hit.id;
-        isRoomDrag.value = false;
-        applStartPos.value = { x: hit.pos.x, z: hit.pos.z };
-      } else if (roomEditable) {
-        draggingApplianceId.value = "";
-        isRoomDrag.value = true;
-        startDX.value = dragX.value;
-        startDY.value = dragY.value;
-      } else {
-        draggingApplianceId.value = "";
-        isRoomDrag.value = false;
-      }
-    })
-    .onUpdate((e) => {
-      if (draggingApplianceId.value) {
-        applDragDX.value = e.translationX;
-        applDragDY.value = e.translationY;
-      } else if (isRoomDrag.value) {
-        dragX.value = startDX.value + e.translationX;
-        dragY.value = startDY.value + e.translationY;
-      }
-    })
-    .onEnd(() => {
-      const aid = draggingApplianceId.value;
-      if (aid) {
-        const dx = applDragDX.value / scale;
-        const dz = -applDragDY.value / scale;
-        const rot = roomRotation.value;
-        const rad = (rot * Math.PI) / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        const localDx = dx * cos - dz * sin;
-        const localDz = dx * sin + dz * cos;
-        const appl = appliances.find((a) => a.id === aid);
-        if (appl && onApplianceUpdate) {
-          runOnJS(onApplianceUpdate)(room.id, {
-            ...appl,
-            position: {
-              x: applStartPos.value.x + localDx,
-              y: appl.position?.y ?? 0,
-              z: applStartPos.value.z + localDz,
-            },
-          });
-        }
-        draggingApplianceId.value = "";
-        applDragDX.value = 0;
-        applDragDY.value = 0;
-      } else if (isRoomDrag.value) {
-        const newOrigin = {
-          x: o.x + dragX.value / scale,
-          z: o.z - dragY.value / scale,
-        };
-        dragX.value = 0;
-        dragY.value = 0;
-        isRoomDrag.value = false;
-        if (onMove) runOnJS(onMove)(room.id, newOrigin);
-      }
-    });
-
-  const doubleTap = Gesture.Tap()
-    .numberOfTaps(2)
-    .maxDelay(150)
-    .enabled(roomEditable || applianceEditable)
-    .onEnd((e) => {
-      const lx = e.absoluteX - svgPos.value.x;
-      const ly = e.absoluteY - svgPos.value.y;
-      let hit: (typeof applianceHitBoxes)[number] | undefined;
-      if (applianceEditable && applianceHitBoxes.length > 0) {
-        hit = applianceHitBoxes.find(
-          (b) =>
-            lx >= b.x &&
-            lx <= b.x + b.w &&
-            ly >= b.y &&
-            ly <= b.y + b.h,
-        );
-        if (!hit) {
-          hit = applianceHitBoxes.reduce(
-            (best, b) => {
-              const dx = lx - (b.x + b.w / 2);
-              const dy = ly - (b.y + b.h / 2);
-              const dist = dx * dx + dy * dy;
-              return dist < best.dist ? { box: b, dist } : best;
-            },
-            { box: applianceHitBoxes[0], dist: Infinity },
-          ).box;
-        }
-      }
-      if (hit) {
-        const newRot = (hit.rot + 90) % 360;
-        const appl = appliances.find((a) => a.id === hit.id);
-        if (appl && onApplianceUpdate) {
-          runOnJS(onApplianceUpdate)(room.id, { ...appl, rotation: newRot });
-        }
-      } else if (roomEditable) {
-        roomRotation.value = (roomRotation.value + 90) % 360;
-        if (onRotate) runOnJS(onRotate)(room.id, roomRotation.value);
-      }
-    });
-
-  const roomGesture = Gesture.Race(doubleTap, pan);
 
   const globalOriginX = o.x;
   const globalOriginZ = o.z;
@@ -675,8 +556,8 @@ function RoomGroup({
 
   const animatedProps = useAnimatedProps(() => ({
     transform: [
-      { translateX: dragX.value + labelScreen.sx },
-      { translateY: dragY.value + labelScreen.sy },
+      { translateX: (draggingRoomId.value === room.id ? dragDX.value : 0) + labelScreen.sx },
+      { translateY: (draggingRoomId.value === room.id ? dragDY.value : 0) + labelScreen.sy },
       { rotate: `${roomRotation.value}deg` },
       { translateX: -labelScreen.sx },
       { translateY: -labelScreen.sy },
@@ -685,14 +566,13 @@ function RoomGroup({
 
   const textAnimatedProps = useAnimatedProps(() => ({
     transform: [
-      { translateX: dragX.value },
-      { translateY: dragY.value },
+      { translateX: draggingRoomId.value === room.id ? dragDX.value : 0 },
+      { translateY: draggingRoomId.value === room.id ? dragDY.value : 0 },
     ],
   }));
 
   return (
-    <GestureDetector gesture={roomGesture}>
-      <G>
+    <G>
         <AnimatedG animatedProps={animatedProps}>
           <Path d={floorPath} fill={colors.surfaceContainerHighest} />
 
@@ -711,24 +591,29 @@ function RoomGroup({
             const color = applianceColor(a.name, colors);
 
             return (
-              <AnimatedApplianceGroup
-                key={a.id}
-                id={a.id}
-                cx={sc.sx}
-                cy={sc.sy}
-                aw={aw}
-                ah={ah}
-                name={a.name}
-                fontSize={Math.min(aw / 5, ah / 2.5, 8)}
-                fill={color}
-                stroke={colors.outline}
-                onSurfaceFill={colors.onSurface}
-                displayRot={a.rotation ?? 0}
-                rotation={roomRotation}
-                isDragging={draggingApplianceId}
-                dragDX={applDragDX}
-                dragDY={applDragDY}
-              />
+              <G key={a.id}>
+                <AnimatedApplianceGroup
+                  id={a.id}
+                  cx={sc.sx}
+                  cy={sc.sy}
+                  aw={aw}
+                  ah={ah}
+                  name={a.name}
+                  fontSize={Math.min(aw / 5, ah / 2.5, 8)}
+                  fill={color}
+                  stroke={selectedApplianceId === a.id ? colors.primary : colors.outline}
+                  onSurfaceFill={colors.onSurface}
+                  displayRot={a.rotation ?? 0}
+                  rotation={roomRotation}
+                  isDragging={draggingApplianceId}
+                  dragDX={applDragDX}
+                  dragDY={applDragDY}
+                />
+                {selectedApplianceId === a.id && (
+                  <ApplianceSelectionHighlight id={a.id} cx={sc.sx} cy={sc.sy} aw={aw} ah={ah}
+                    color={colors.primary} isDragging={draggingApplianceId} dragDX={applDragDX} dragDY={applDragDY} />
+                )}
+              </G>
             );
           })}
 
@@ -864,7 +749,6 @@ function RoomGroup({
           </SvgText>
         </AnimatedG>
       </G>
-    </GestureDetector>
   );
 }
 
@@ -873,6 +757,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   editable = false,
   roomEditable,
   applianceEditable,
+  selectedApplianceId,
   onRoomMove,
   onRoomRotate,
   onApplianceUpdate,
@@ -881,10 +766,24 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   style,
 }) => {
   const { colors } = useTheme();
+  const hasAnyEditMode = editable || roomEditable || applianceEditable;
   const [size, setSize] = useState({ width: 0, height: 0 });
   const roomRotationsRef = useRef<Record<string, number>>({});
   const viewRef = useAnimatedRef<any>();
   const svgPos = useSharedValue({ x: 0, y: 0 });
+
+  const scaleSh = useSharedValue(1);
+
+  const draggingRoomId = useSharedValue("");
+  const dragDX = useSharedValue(0);
+  const dragDY = useSharedValue(0);
+  const startRoomOrigin = useSharedValue({ x: 0, z: 0 });
+  const draggingApplianceId = useSharedValue("");
+  const draggingApplianceRoomId = useSharedValue("");
+  const applDragDX = useSharedValue(0);
+  const applDragDY = useSharedValue(0);
+  const applStartPos = useSharedValue({ x: 0, z: 0 });
+  const roomRotationsSh = useSharedValue<Record<string, number>>({});
 
   useEffect(() => {
     rooms.forEach((r) => {
@@ -893,6 +792,10 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       }
     });
   }, [rooms]);
+
+  useEffect(() => {
+    roomRotationsSh.value = { ...roomRotationsRef.current };
+  }, [rooms, roomRotationsSh]);
 
   useEffect(() => {
     if (size.width === 0) return;
@@ -946,7 +849,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     });
 
   const globalPan = Gesture.Pan()
-    .minPointers(editable ? 2 : 1)
+    .minPointers(hasAnyEditMode ? 2 : 1)
     .onStart(() => {
       startPanX.value = panX.value;
       startPanY.value = panY.value;
@@ -956,7 +859,163 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       panY.value = startPanY.value + e.translationY;
     });
 
-  const composed = Gesture.Simultaneous(globalPan, pinch);
+  const floorHitDataRef = useSharedValue<typeof floorHitData>([] as any);
+
+  const roomPan = Gesture.Pan()
+    .enabled(!!hasAnyEditMode)
+    .maxPointers(1)
+    .onStart((e) => {
+      const lx = e.absoluteX - svgPos.value.x;
+      const ly = e.absoluteY - svgPos.value.y;
+      const hitData = floorHitDataRef.value;
+      let hitRoom: (typeof hitData)[number] | undefined;
+      let hitAppl: (typeof hitData)[number]["appliances"][number] | undefined;
+
+      for (const roomData of hitData) {
+        const apps = selectedApplianceId
+          ? roomData.appliances.filter((a) => a.id === selectedApplianceId)
+          : roomData.appliances;
+        for (const a of apps) {
+          if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
+            hitRoom = roomData;
+            hitAppl = a;
+            break;
+          }
+        }
+        if (hitAppl) break;
+      }
+
+      if (!hitAppl) {
+        for (const roomData of hitData) {
+          const cx = roomData.centerScreen.sx;
+          const cy = roomData.centerScreen.sy;
+          if (
+            lx >= cx - roomData.roomScreenW / 2 &&
+            lx <= cx + roomData.roomScreenW / 2 &&
+            ly >= cy - roomData.roomScreenD / 2 &&
+            ly <= cy + roomData.roomScreenD / 2
+          ) {
+            hitRoom = roomData;
+            break;
+          }
+        }
+      }
+
+      if (hitAppl && applianceEditable) {
+        draggingApplianceId.value = hitAppl.id;
+        draggingApplianceRoomId.value = hitRoom!.roomId;
+        draggingRoomId.value = "";
+        applStartPos.value = { x: hitAppl.pos.x, z: hitAppl.pos.z };
+      } else if (hitRoom && roomEditable) {
+        draggingApplianceId.value = "";
+        draggingApplianceRoomId.value = "";
+        draggingRoomId.value = hitRoom.roomId;
+        startRoomOrigin.value = { x: hitRoom.roomOrigin.x, z: hitRoom.roomOrigin.z };
+      } else {
+        draggingApplianceId.value = "";
+        draggingApplianceRoomId.value = "";
+        draggingRoomId.value = "";
+      }
+    })
+    .onUpdate((e) => {
+      if (draggingApplianceId.value) {
+        applDragDX.value = e.translationX;
+        applDragDY.value = e.translationY;
+      } else if (draggingRoomId.value) {
+        dragDX.value = e.translationX;
+        dragDY.value = e.translationY;
+      }
+    })
+    .onEnd(() => {
+      const aid = draggingApplianceId.value;
+      const rid = draggingApplianceRoomId.value;
+      if (aid && rid) {
+        const dx = applDragDX.value / scaleSh.value;
+        const dz = -applDragDY.value / scaleSh.value;
+        const rot = roomRotationsSh.value[rid] ?? 0;
+        const rad = (rot * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const localDx = dx * cos - dz * sin;
+        const localDz = dx * sin + dz * cos;
+        runOnJS(handleApplianceDragEnd)(rid, aid, localDx, localDz);
+        draggingApplianceId.value = "";
+        draggingApplianceRoomId.value = "";
+        applDragDX.value = 0;
+        applDragDY.value = 0;
+      } else if (draggingRoomId.value) {
+        const origin = {
+          x: startRoomOrigin.value.x + dragDX.value / scaleSh.value,
+          z: startRoomOrigin.value.z - dragDY.value / scaleSh.value,
+        };
+        runOnJS(handleRoomDragEnd)(draggingRoomId.value, origin);
+        draggingRoomId.value = "";
+        dragDX.value = 0;
+        dragDY.value = 0;
+      }
+    });
+
+  const roomDoubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDelay(150)
+    .enabled(!!hasAnyEditMode)
+    .onEnd((e) => {
+      const lx = e.absoluteX - svgPos.value.x;
+      const ly = e.absoluteY - svgPos.value.y;
+      const hitData = floorHitDataRef.value;
+      let hitAppl: typeof hitData[number]["appliances"][number] | undefined;
+      let hitRoom: typeof hitData[number] | undefined;
+
+      for (const roomData of hitData) {
+        const apps = selectedApplianceId
+          ? roomData.appliances.filter((a) => a.id === selectedApplianceId)
+          : roomData.appliances;
+        for (const a of apps) {
+          if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
+            hitRoom = roomData;
+            hitAppl = a;
+            break;
+          }
+        }
+        if (hitAppl) break;
+      }
+
+      if (!hitAppl) {
+        for (const roomData of hitData) {
+          const cx = roomData.centerScreen.sx;
+          const cy = roomData.centerScreen.sy;
+          if (
+            lx >= cx - roomData.roomScreenW / 2 &&
+            lx <= cx + roomData.roomScreenW / 2 &&
+            ly >= cy - roomData.roomScreenD / 2 &&
+            ly <= cy + roomData.roomScreenD / 2
+          ) {
+            hitRoom = roomData;
+            break;
+          }
+        }
+      }
+
+      if (hitAppl && applianceEditable) {
+        const newRot = (hitAppl.rot + 90) % 360;
+        const roomId = hitRoom!.roomId;
+        const appId = hitAppl.id;
+        const room = rooms.find((r) => r.id === roomId);
+        const appl = room?.appliances?.find((a) => a.id === appId);
+        if (appl && onApplianceUpdate) {
+          onApplianceUpdate(roomId, { ...appl, rotation: newRot });
+        }
+      } else if (hitRoom && roomEditable) {
+        const newRot = ((roomRotationsRef.current[hitRoom.roomId] ?? hitRoom.roomRotation) + 90) % 360;
+        roomRotationsRef.current[hitRoom.roomId] = newRot;
+        roomRotationsSh.value = { ...roomRotationsRef.current };
+        onRoomRotate?.(hitRoom.roomId, newRot);
+      }
+    });
+
+  const roomGesture = Gesture.Race(roomDoubleTap, roomPan);
+
+  const composed = Gesture.Exclusive(roomGesture, Gesture.Simultaneous(globalPan, pinch));
 
   const animatedProps = useAnimatedProps(() => ({
     transform: `translate(${panX.value}, ${panY.value}) scale(${zoom.value})`,
@@ -987,11 +1046,106 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     return { scale, offsetX, offsetY };
   }, [gb, size, topInset]);
 
+  useEffect(() => {
+    scaleSh.value = transforms.scale;
+  }, [transforms.scale, scaleSh]);
+
   const handleRoomMove = useCallback(
     (roomId: string, origin: { x: number; z: number }) => {
       const room = rooms.find((r) => r.id === roomId);
       if (!room) return;
 
+      const snapped = findDoorSnap(room, origin, rooms, roomRotationsRef.current);
+      onRoomMove?.(roomId, snapped ?? origin);
+    },
+    [rooms, onRoomMove],
+  );
+
+  const floorHitData = useMemo(
+    () => {
+      return rooms.map((room) => {
+        const o = room.origin ?? { x: 0, z: 0 };
+        const rot = roomRotationsRef.current[room.id] ?? room.rotation ?? 0;
+        const localBounds = roomBounds(room.walls ?? []);
+        const labelScreen = toScreen(
+          o.x + (localBounds.minX + localBounds.maxX) / 2,
+          o.z + (localBounds.minZ + localBounds.maxZ) / 2,
+          gb,
+          transforms.scale,
+          transforms.offsetX,
+          transforms.offsetY,
+        );
+
+        const appliances = (room.appliances ?? [])
+          .filter((a) => a.position && a.dimensions)
+          .map((a) => {
+            const sc = toScreen(
+              a.position!.x + o.x,
+              a.position!.z + o.z,
+              gb,
+              transforms.scale,
+              transforms.offsetX,
+              transforms.offsetY,
+            );
+            const rotated = rot
+              ? rotateXZ(sc.sx, sc.sy, labelScreen.sx, labelScreen.sy, rot)
+              : { x: sc.sx, z: sc.sy };
+            const aw = Math.max(a.dimensions!.x * transforms.scale, 12);
+            const ah = Math.max(a.dimensions!.z * transforms.scale, 12);
+            return {
+              id: a.id,
+              x: rotated.x - aw / 2,
+              y: rotated.z - ah / 2,
+              w: aw,
+              h: ah,
+              pos: a.position!,
+              rot: a.rotation ?? 0,
+            };
+          });
+
+        const roomW = localBounds.maxX - localBounds.minX;
+        const roomD = localBounds.maxZ - localBounds.minZ;
+        const roomScreenW = roomW * transforms.scale;
+        const roomScreenD = roomD * transforms.scale;
+
+        return {
+          roomId: room.id,
+          roomOrigin: o,
+          roomRotation: rot,
+          centerScreen: labelScreen,
+          roomScreenW,
+          roomScreenD,
+          appliances,
+        };
+      });
+    },
+    [rooms, gb, transforms],
+  );
+
+  useEffect(() => { floorHitDataRef.value = floorHitData; }, [floorHitData]);
+
+  const handleApplianceDragEnd = useCallback(
+    (roomId: string, applianceId: string, dx: number, dy: number) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (!room) return;
+      const appl = room.appliances?.find((a) => a.id === applianceId);
+      if (!appl || !onApplianceUpdate) return;
+      onApplianceUpdate(roomId, {
+        ...appl,
+        position: {
+          x: appl.position?.x ?? 0 + dx,
+          y: appl.position?.y ?? 0,
+          z: appl.position?.z ?? 0 + dy,
+        },
+      });
+    },
+    [rooms, onApplianceUpdate],
+  );
+
+  const handleRoomDragEnd = useCallback(
+    (roomId: string, origin: { x: number; z: number }) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (!room) return;
       const snapped = findDoorSnap(room, origin, rooms, roomRotationsRef.current);
       onRoomMove?.(roomId, snapped ?? origin);
     },
@@ -1033,16 +1187,13 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
                 scale={scale}
                 offsetX={offsetX}
                 offsetY={offsetY}
-                editable={editable}
-                roomEditable={roomEditable}
-                applianceEditable={applianceEditable}
-                svgPos={svgPos}
-                onMove={handleRoomMove}
-                onRotate={(id, rot) => {
-                  roomRotationsRef.current[id] = rot;
-                  onRoomRotate?.(id, rot);
-                }}
-                onApplianceUpdate={onApplianceUpdate}
+                dragDX={dragDX}
+                dragDY={dragDY}
+                draggingRoomId={draggingRoomId}
+                draggingApplianceId={draggingApplianceId}
+                applDragDX={applDragDX}
+                applDragDY={applDragDY}
+                selectedApplianceId={room.appliances?.some((a) => a.id === selectedApplianceId) ? selectedApplianceId : undefined}
               />
             ))}
           </AnimatedG>

@@ -18,10 +18,22 @@ export default function RoomApplianceScreen() {
   const insets = useSafeAreaInsets();
   const { rooms, updateAppliance, deleteAppliance } = usePersistedRooms();
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedApplianceId, setSelectedApplianceId] = useState<string | null>(null);
 
   const room = rooms.find((r) => r.id === id);
   const roomName = room?.name ?? `Room ${id}`;
   const appliances = room?.appliances ?? [];
+
+  const handleToggleSelect = useCallback(
+    (applianceId: string) => {
+      setSelectedApplianceId((prev) => {
+        if (prev === applianceId) return null;
+        setIsEditing(true);
+        return applianceId;
+      });
+    },
+    [],
+  );
 
   const handleEdit = useCallback(
     (data: Appliance) => {
@@ -55,6 +67,7 @@ export default function RoomApplianceScreen() {
               room={room ?? undefined}
               roomEditable={false}
               applianceEditable={isEditing}
+              selectedApplianceId={selectedApplianceId ?? undefined}
               onToggleApplianceEdit={() => setIsEditing((v) => !v)}
               onApplianceUpdate={updateAppliance}
             />
@@ -79,6 +92,8 @@ export default function RoomApplianceScreen() {
             renderItem={({ item }) => (
               <ApplianceListItem
                 room={item}
+                selected={item.id === selectedApplianceId}
+                onToggleSelect={() => handleToggleSelect(item.id)}
                 onEdit={handleEdit}
                 onDelete={() => handleDelete(item.id)}
               />
