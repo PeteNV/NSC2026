@@ -874,6 +874,34 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
 
   const floorHitDataRef = useSharedValue<typeof floorHitData>([] as any);
 
+  const handleApplianceDragEnd = useCallback(
+    (roomId: string, applianceId: string, dx: number, dy: number) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (!room) return;
+      const appl = room.appliances?.find((a) => a.id === applianceId);
+      if (!appl || !onApplianceUpdate) return;
+      onApplianceUpdate(roomId, {
+        ...appl,
+        position: {
+          x: (appl.position?.x ?? 0) + dx,
+          y: appl.position?.y ?? 0,
+          z: (appl.position?.z ?? 0) + dy,
+        },
+      });
+    },
+    [rooms, onApplianceUpdate],
+  );
+
+  const handleRoomDragEnd = useCallback(
+    (roomId: string, origin: { x: number; z: number }) => {
+      const room = rooms.find((r) => r.id === roomId);
+      if (!room) return;
+      const snapped = findDoorSnap(room, origin, rooms, roomRotationsRef.current);
+      onRoomMove?.(roomId, snapped ?? origin);
+    },
+    [rooms, onRoomMove],
+  );
+
   const roomPan = Gesture.Pan()
     .enabled(!!hasAnyEditMode)
     .maxPointers(1)
@@ -1214,34 +1242,6 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   );
 
   useEffect(() => { floorHitDataRef.value = floorHitData; }, [floorHitData]);
-
-  const handleApplianceDragEnd = useCallback(
-    (roomId: string, applianceId: string, dx: number, dy: number) => {
-      const room = rooms.find((r) => r.id === roomId);
-      if (!room) return;
-      const appl = room.appliances?.find((a) => a.id === applianceId);
-      if (!appl || !onApplianceUpdate) return;
-      onApplianceUpdate(roomId, {
-        ...appl,
-        position: {
-          x: appl.position?.x ?? 0 + dx,
-          y: appl.position?.y ?? 0,
-          z: appl.position?.z ?? 0 + dy,
-        },
-      });
-    },
-    [rooms, onApplianceUpdate],
-  );
-
-  const handleRoomDragEnd = useCallback(
-    (roomId: string, origin: { x: number; z: number }) => {
-      const room = rooms.find((r) => r.id === roomId);
-      if (!room) return;
-      const snapped = findDoorSnap(room, origin, rooms, roomRotationsRef.current);
-      onRoomMove?.(roomId, snapped ?? origin);
-    },
-    [rooms, onRoomMove],
-  );
 
   if (size.width === 0 || size.height === 0) {
     return (
