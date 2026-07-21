@@ -89,7 +89,7 @@ const ApplianceListItem: StylableFC<{
               variant="labelLarge"
               style={{ color: colors.onSurfaceVariant }}
             >
-              {(room.power * room.usage) / 1000} kWh
+              {((room.power * room.usage) / 1000).toFixed(2)} kWh
             </Text>
             <Menu
               style={{ padding: 32 }}

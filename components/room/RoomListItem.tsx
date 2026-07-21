@@ -50,7 +50,7 @@ const RoomListItem: StylableFC<{
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
               >
-                {room.applianceCount} appliances {"•"} {room.power} kWh
+                {room.applianceCount} appliances {"•"} {room.power.toFixed(2)} kWh
               </Text>
             </View>
           </>
