@@ -5,9 +5,12 @@ import Map from "@/components/Map";
 import RoomListItem from "@/components/room/RoomListItem";
 import ScanRoomButton from "@/components/room/ScanRoomButton";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
+import { useScanResult } from "@/hooks/useScanResult";
 import { useTheme } from "@/hooks/useTheme";
+import type { ScanResult } from "@/modules/room-scanner";
+import { mapScanToRoom } from "@/utils/scan-mapper";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,6 +23,7 @@ export default function RoomEditScreen() {
   const insets = useSafeAreaInsets();
   const {
     rooms,
+    addRoom,
     updateAppliance,
     updateRoomOrigin,
     updateRoomRotation,
@@ -27,6 +31,7 @@ export default function RoomEditScreen() {
     deleteFloor,
     deleteRoom,
   } = usePersistedRooms();
+  const { lastResult } = useScanResult();
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -66,6 +71,13 @@ export default function RoomEditScreen() {
   const handleScanRoom = useCallback(() => {
     router.push("/scanner");
   }, []);
+
+  useEffect(() => {
+    if (!lastResult) return;
+    const roomId = String(Date.now());
+    const room = mapScanToRoom(lastResult, roomId, "Scanned Room");
+    addRoom(room);
+  }, [lastResult]);
 
   return (
     <View
