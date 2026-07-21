@@ -21,14 +21,15 @@ const ApplianceListItem: StylableFC<{
   onPress?: () => void;
   onEdit?: (data: Appliance) => void;
   onDelete?: () => void;
+  onRotate?: () => void;
   selected?: boolean;
   onToggleSelect?: () => void;
-}> = ({ room, onPress, onEdit, onDelete, selected, onToggleSelect, className, style }) => {
+}> = ({ room, onPress, onEdit, onDelete, onRotate, selected, onToggleSelect, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-  const pendingAction = useRef<"edit" | "delete" | "select" | null>(null);
+  const pendingAction = useRef<"edit" | "delete" | "select" | "rotate" | null>(null);
 
   useEffect(() => {
     if (!menuVisible && pendingAction.current) {
@@ -38,9 +39,10 @@ const ApplianceListItem: StylableFC<{
         if (action === "edit") setDialogVisible(true);
         else if (action === "delete") setDeleteDialogVisible(true);
         else if (action === "select") onToggleSelect?.();
+        else if (action === "rotate") onRotate?.();
       });
     }
-  }, [menuVisible, onToggleSelect]);
+  }, [menuVisible, onToggleSelect, onRotate]);
 
   const handleMenuDismiss = useCallback(() => {
     setMenuVisible(false);
@@ -109,6 +111,18 @@ const ApplianceListItem: StylableFC<{
                 </TouchableRipple>
               }
             >
+              {onRotate && room.position && (
+                <Menu.Item
+                  leadingIcon={({ size, color }) => (
+                    <MaterialIcons name="rotate-right" size={size} color={color} />
+                  )}
+                  onPress={() => {
+                    pendingAction.current = "rotate";
+                    setMenuVisible(false);
+                  }}
+                  title="Rotate 90°"
+                />
+              )}
               {onToggleSelect && (
                 <Menu.Item
                   leadingIcon={({ size, color }) => (

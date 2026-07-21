@@ -94,6 +94,9 @@ export default function RoomApplianceScreen() {
                 room={item}
                 selected={item.id === selectedApplianceId}
                 onToggleSelect={() => handleToggleSelect(item.id)}
+                onRotate={() => {
+                  if (id) updateAppliance(id, { ...item, rotation: ((item.rotation ?? 0) + 90) % 360 });
+                }}
                 onEdit={handleEdit}
                 onDelete={() => handleDelete(item.id)}
               />

@@ -892,6 +892,53 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     [rooms, onApplianceUpdate],
   );
 
+  const handleApplianceResize = useCallback(
+    (roomId: string, applianceId: string, dx: number, dy: number, corner: string) => {
+      const room = rooms.find((r) => r.id === roomId);
+      const appl = room?.appliances?.find((a) => a.id === applianceId);
+      if (!appl || !onApplianceUpdate) return;
+      const minSize = 0.05;
+      let newW = appl.dimensions!.x;
+      let newD = appl.dimensions!.z;
+      const newPos = { x: appl.position!.x, z: appl.position!.z };
+
+      if (corner === "br") { newW = Math.max(minSize, newW + dx); newD = Math.max(minSize, newD - dy); }
+      else if (corner === "bl") { newW = Math.max(minSize, newW - dx); newD = Math.max(minSize, newD - dy); newPos.x += dx; }
+      else if (corner === "tr") { newW = Math.max(minSize, newW + dx); newD = Math.max(minSize, newD + dy); newPos.z -= dy; }
+      else if (corner === "tl") { newW = Math.max(minSize, newW - dx); newD = Math.max(minSize, newD + dy); newPos.x += dx; newPos.z -= dy; }
+
+      onApplianceUpdate(roomId, {
+        ...appl,
+        dimensions: { ...appl.dimensions!, x: newW, z: newD },
+        position: { ...appl.position!, x: newPos.x, z: newPos.z },
+      });
+    },
+    [rooms, onApplianceUpdate],
+  );
+
+  const handleApplianceRotate = useCallback(
+    (roomId: string, applianceId: string) => {
+      const room = rooms.find((r) => r.id === roomId);
+      const appl = room?.appliances?.find((a) => a.id === applianceId);
+      if (appl && onApplianceUpdate) {
+        const newRot = ((appl.rotation ?? 0) + 90) % 360;
+        onApplianceUpdate(roomId, { ...appl, rotation: newRot });
+      }
+    },
+    [rooms, onApplianceUpdate],
+  );
+
+  const handleRoomRotate = useCallback(
+    (roomId: string) => {
+      const currentRot = roomRotationsRef.current[roomId] ?? rooms.find((r) => r.id === roomId)?.rotation ?? 0;
+      const newRot = (currentRot + 90) % 360;
+      roomRotationsRef.current[roomId] = newRot;
+      roomRotationsSh.value = { ...roomRotationsRef.current };
+      onRoomRotate?.(roomId, newRot);
+    },
+    [rooms, onRoomRotate],
+  );
+
   const handleRoomDragEnd = useCallback(
     (roomId: string, origin: { x: number; z: number }) => {
       const room = rooms.find((r) => r.id === roomId);
@@ -913,17 +960,32 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       let hitAppl: (typeof hitData)[number]["appliances"][number] | undefined;
 
       for (const roomData of hitData) {
-        const apps = selectedApplianceId
-          ? roomData.appliances.filter((a) => a.id === selectedApplianceId)
-          : roomData.appliances;
-        for (const a of apps) {
-          if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
-            hitRoom = roomData;
-            hitAppl = a;
-            break;
+        if (selectedApplianceId) {
+          const cx = roomData.centerScreen.sx;
+          const cy = roomData.centerScreen.sy;
+          if (
+            lx >= cx - roomData.roomScreenW / 2 &&
+            lx <= cx + roomData.roomScreenW / 2 &&
+            ly >= cy - roomData.roomScreenD / 2 &&
+            ly <= cy + roomData.roomScreenD / 2
+          ) {
+            const sel = roomData.appliances.find((a) => a.id === selectedApplianceId);
+            if (sel) {
+              hitRoom = roomData;
+              hitAppl = sel;
+              break;
+            }
           }
+        } else {
+          for (const a of roomData.appliances) {
+            if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
+              hitRoom = roomData;
+              hitAppl = a;
+              break;
+            }
+          }
+          if (hitAppl) break;
         }
-        if (hitAppl) break;
       }
 
       if (!hitAppl) {
@@ -965,12 +1027,14 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
           draggingApplianceId.value = "";
           draggingRoomId.value = "";
         } else {
+          resizingApplianceId.value = "";
           draggingApplianceId.value = hitAppl.id;
           draggingApplianceRoomId.value = hitRoom!.roomId;
           draggingRoomId.value = "";
           applStartPos.value = { x: hitAppl.pos.x, z: hitAppl.pos.z };
         }
       } else if (hitRoom && roomEditable) {
+        resizingApplianceId.value = "";
         draggingApplianceId.value = "";
         draggingApplianceRoomId.value = "";
         draggingRoomId.value = hitRoom.roomId;
@@ -998,47 +1062,12 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       const aid = draggingApplianceId.value;
       const rid = draggingApplianceRoomId.value;
       if (resizingApplianceId.value) {
-        const rid_ = draggingApplianceRoomId.value || rooms.find(
-          (r) => r.appliances?.some((a) => a.id === resizingApplianceId.value),
-        )?.id;
-        if (rid_) {
+        const rid = draggingApplianceRoomId.value;
+        const aid = resizingApplianceId.value;
+        if (rid) {
           const dx = applDragDX.value / scaleSh.value;
-          const dz = -applDragDY.value / scaleSh.value;
-          const startDims = resizeStartDims.value;
-          const corner = resizeCorner.value;
-          const minSize = 0.05;
-
-          let newW = startDims.x;
-          let newD = startDims.z;
-          let newPos = { ...resizeStartPos.value };
-
-          // Adjust dimensions and position based on which corner is dragged
-          if (corner === "br") {
-            newW = Math.max(minSize, startDims.x + dx);
-            newD = Math.max(minSize, startDims.z - dz);
-          } else if (corner === "bl") {
-            newW = Math.max(minSize, startDims.x - dx);
-            newD = Math.max(minSize, startDims.z - dz);
-            newPos = { ...newPos, x: resizeStartPos.value.x + dx };
-          } else if (corner === "tr") {
-            newW = Math.max(minSize, startDims.x + dx);
-            newD = Math.max(minSize, startDims.z + dz);
-            newPos = { ...newPos, z: resizeStartPos.value.z - dz };
-          } else if (corner === "tl") {
-            newW = Math.max(minSize, startDims.x - dx);
-            newD = Math.max(minSize, startDims.z + dz);
-            newPos = { ...newPos, x: resizeStartPos.value.x + dx, z: resizeStartPos.value.z - dz };
-          }
-
-          const room = rooms.find((r) => r.id === rid_);
-          const appl = room?.appliances?.find((a) => a.id === resizingApplianceId.value);
-          if (appl && onApplianceUpdate) {
-            runOnJS(onApplianceUpdate)(rid_, {
-              ...appl,
-              dimensions: { ...appl.dimensions!, x: newW, z: newD },
-              position: { ...appl.position!, x: newPos.x, z: newPos.z },
-            });
-          }
+          const dy = -applDragDY.value / scaleSh.value;
+          runOnJS(handleApplianceResize)(rid, aid, dx, dy, resizeCorner.value);
         }
         resizingApplianceId.value = "";
         resizeCorner.value = "";
@@ -1082,17 +1111,32 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       let hitRoom: typeof hitData[number] | undefined;
 
       for (const roomData of hitData) {
-        const apps = selectedApplianceId
-          ? roomData.appliances.filter((a) => a.id === selectedApplianceId)
-          : roomData.appliances;
-        for (const a of apps) {
-          if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
-            hitRoom = roomData;
-            hitAppl = a;
-            break;
+        if (selectedApplianceId) {
+          const cx = roomData.centerScreen.sx;
+          const cy = roomData.centerScreen.sy;
+          if (
+            lx >= cx - roomData.roomScreenW / 2 &&
+            lx <= cx + roomData.roomScreenW / 2 &&
+            ly >= cy - roomData.roomScreenD / 2 &&
+            ly <= cy + roomData.roomScreenD / 2
+          ) {
+            const sel = roomData.appliances.find((a) => a.id === selectedApplianceId);
+            if (sel) {
+              hitRoom = roomData;
+              hitAppl = sel;
+              break;
+            }
           }
+        } else {
+          for (const a of roomData.appliances) {
+            if (lx >= a.x && lx <= a.x + a.w && ly >= a.y && ly <= a.y + a.h) {
+              hitRoom = roomData;
+              hitAppl = a;
+              break;
+            }
+          }
+          if (hitAppl) break;
         }
-        if (hitAppl) break;
       }
 
       if (!hitAppl) {
@@ -1112,19 +1156,9 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       }
 
       if (hitAppl && applianceEditable) {
-        const newRot = (hitAppl.rot + 90) % 360;
-        const roomId = hitRoom!.roomId;
-        const appId = hitAppl.id;
-        const room = rooms.find((r) => r.id === roomId);
-        const appl = room?.appliances?.find((a) => a.id === appId);
-        if (appl && onApplianceUpdate) {
-          onApplianceUpdate(roomId, { ...appl, rotation: newRot });
-        }
+        runOnJS(handleApplianceRotate)(hitRoom!.roomId, hitAppl.id);
       } else if (hitRoom && roomEditable) {
-        const newRot = ((roomRotationsRef.current[hitRoom.roomId] ?? hitRoom.roomRotation) + 90) % 360;
-        roomRotationsRef.current[hitRoom.roomId] = newRot;
-        roomRotationsSh.value = { ...roomRotationsRef.current };
-        onRoomRotate?.(hitRoom.roomId, newRot);
+        runOnJS(handleRoomRotate)(hitRoom.roomId);
       }
     });
 
