@@ -610,8 +610,16 @@ function RoomGroup({
                   dragDY={applDragDY}
                 />
                 {selectedApplianceId === a.id && (
-                  <ApplianceSelectionHighlight id={a.id} cx={sc.sx} cy={sc.sy} aw={aw} ah={ah}
-                    color={colors.primary} isDragging={draggingApplianceId} dragDX={applDragDX} dragDY={applDragDY} />
+                  <>
+                    <ApplianceSelectionHighlight id={a.id} cx={sc.sx} cy={sc.sy} aw={aw} ah={ah}
+                      color={colors.primary} isDragging={draggingApplianceId} dragDX={applDragDX} dragDY={applDragDY} />
+                    {[[-aw / 2, -ah / 2], [aw / 2, -ah / 2], [aw / 2, ah / 2], [-aw / 2, ah / 2]].map(([ox, oy], i) => (
+                      <Rect key={i}
+                        x={sc.sx + ox - 5} y={sc.sy + oy - 5}
+                        width={10} height={10} fill={colors.primary}
+                        stroke={colors.surface} strokeWidth={1.5} rx={2} />
+                    ))}
+                  </>
                 )}
               </G>
             );
@@ -785,6 +793,11 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   const applStartPos = useSharedValue({ x: 0, z: 0 });
   const roomRotationsSh = useSharedValue<Record<string, number>>({});
 
+  const resizingApplianceId = useSharedValue("");
+  const resizeCorner = useSharedValue(""); // "tl" | "tr" | "br" | "bl"
+  const resizeStartDims = useSharedValue({ x: 0, z: 0 });
+  const resizeStartPos = useSharedValue({ sx: 0, sy: 0, x: 0, z: 0 });
+
   useEffect(() => {
     rooms.forEach((r) => {
       if (r.rotation !== undefined && roomRotationsRef.current[r.id] === undefined) {
@@ -902,10 +915,33 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       }
 
       if (hitAppl && applianceEditable) {
-        draggingApplianceId.value = hitAppl.id;
-        draggingApplianceRoomId.value = hitRoom!.roomId;
-        draggingRoomId.value = "";
-        applStartPos.value = { x: hitAppl.pos.x, z: hitAppl.pos.z };
+        // Check if touch is on a resize corner (radius 12px)
+        const cx = hitAppl.cx;
+        const cy = hitAppl.cy;
+        const hw = hitAppl.w / 2;
+        const hh = hitAppl.h / 2;
+        const corners: [string, number, number][] = [
+          ["tl", cx - hw, cy - hh],
+          ["tr", cx + hw, cy - hh],
+          ["br", cx + hw, cy + hh],
+          ["bl", cx - hw, cy + hh],
+        ];
+        const cornerHit = corners.find(
+          ([, px, py]) => Math.abs(lx - px) < 14 && Math.abs(ly - py) < 14,
+        );
+        if (cornerHit && selectedApplianceId === hitAppl.id) {
+          resizingApplianceId.value = hitAppl.id;
+          resizeCorner.value = cornerHit[0];
+          resizeStartDims.value = { x: hitAppl.dims.x, z: hitAppl.dims.z };
+          resizeStartPos.value = { sx: lx, sy: ly, x: hitAppl.pos.x, z: hitAppl.pos.z };
+          draggingApplianceId.value = "";
+          draggingRoomId.value = "";
+        } else {
+          draggingApplianceId.value = hitAppl.id;
+          draggingApplianceRoomId.value = hitRoom!.roomId;
+          draggingRoomId.value = "";
+          applStartPos.value = { x: hitAppl.pos.x, z: hitAppl.pos.z };
+        }
       } else if (hitRoom && roomEditable) {
         draggingApplianceId.value = "";
         draggingApplianceRoomId.value = "";
@@ -918,7 +954,11 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       }
     })
     .onUpdate((e) => {
-      if (draggingApplianceId.value) {
+      if (resizingApplianceId.value) {
+        // Use drag translation to update dimensions
+        applDragDX.value = e.translationX;
+        applDragDY.value = e.translationY;
+      } else if (draggingApplianceId.value) {
         applDragDX.value = e.translationX;
         applDragDY.value = e.translationY;
       } else if (draggingRoomId.value) {
@@ -929,7 +969,54 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
     .onEnd(() => {
       const aid = draggingApplianceId.value;
       const rid = draggingApplianceRoomId.value;
-      if (aid && rid) {
+      if (resizingApplianceId.value) {
+        const rid_ = draggingApplianceRoomId.value || rooms.find(
+          (r) => r.appliances?.some((a) => a.id === resizingApplianceId.value),
+        )?.id;
+        if (rid_) {
+          const dx = applDragDX.value / scaleSh.value;
+          const dz = -applDragDY.value / scaleSh.value;
+          const startDims = resizeStartDims.value;
+          const corner = resizeCorner.value;
+          const minSize = 0.05;
+
+          let newW = startDims.x;
+          let newD = startDims.z;
+          let newPos = { ...resizeStartPos.value };
+
+          // Adjust dimensions and position based on which corner is dragged
+          if (corner === "br") {
+            newW = Math.max(minSize, startDims.x + dx);
+            newD = Math.max(minSize, startDims.z - dz);
+          } else if (corner === "bl") {
+            newW = Math.max(minSize, startDims.x - dx);
+            newD = Math.max(minSize, startDims.z - dz);
+            newPos = { ...newPos, x: resizeStartPos.value.x + dx };
+          } else if (corner === "tr") {
+            newW = Math.max(minSize, startDims.x + dx);
+            newD = Math.max(minSize, startDims.z + dz);
+            newPos = { ...newPos, z: resizeStartPos.value.z - dz };
+          } else if (corner === "tl") {
+            newW = Math.max(minSize, startDims.x - dx);
+            newD = Math.max(minSize, startDims.z + dz);
+            newPos = { ...newPos, x: resizeStartPos.value.x + dx, z: resizeStartPos.value.z - dz };
+          }
+
+          const room = rooms.find((r) => r.id === rid_);
+          const appl = room?.appliances?.find((a) => a.id === resizingApplianceId.value);
+          if (appl && onApplianceUpdate) {
+            runOnJS(onApplianceUpdate)(rid_, {
+              ...appl,
+              dimensions: { ...appl.dimensions!, x: newW, z: newD },
+              position: { ...appl.position!, x: newPos.x, z: newPos.z },
+            });
+          }
+        }
+        resizingApplianceId.value = "";
+        resizeCorner.value = "";
+        applDragDX.value = 0;
+        applDragDY.value = 0;
+      } else if (aid && rid) {
         const dx = applDragDX.value / scaleSh.value;
         const dz = -applDragDY.value / scaleSh.value;
         const rot = roomRotationsSh.value[rid] ?? 0;
@@ -1092,13 +1179,17 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
               : { x: sc.sx, z: sc.sy };
             const aw = Math.max(a.dimensions!.x * transforms.scale, 12);
             const ah = Math.max(a.dimensions!.z * transforms.scale, 12);
+            const cx = rotated.x;
+            const cy = rotated.z;
             return {
               id: a.id,
-              x: rotated.x - aw / 2,
-              y: rotated.z - ah / 2,
+              x: cx - aw / 2,
+              y: cy - ah / 2,
               w: aw,
               h: ah,
+              cx, cy,
               pos: a.position!,
+              dims: a.dimensions!,
               rot: a.rotation ?? 0,
             };
           });
