@@ -21,10 +21,6 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf={{ default: "chart.bar", selected: "chart.bar.fill" }} md="assessment" />
         <NativeTabs.Trigger.Label>Report</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="scanner-test">
-        <NativeTabs.Trigger.Label>Scanner Test</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: "qrcode", selected: "qrcode.viewfinder" }} md="scanner" />
-      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
