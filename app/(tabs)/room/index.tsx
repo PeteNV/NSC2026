@@ -9,8 +9,9 @@ import { useScanResult } from "@/hooks/useScanResult";
 import { useTheme } from "@/hooks/useTheme";
 import type { ScanResult } from "@/modules/room-scanner";
 import { mapScanToRoom } from "@/utils/scan-mapper";
+import { roomMonthlyKwh } from "@/utils/energy";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { Button, Dialog, Portal, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,6 +36,11 @@ export default function RoomEditScreen() {
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const sortedRooms = useMemo(
+    () => [...rooms].sort((a, b) => roomMonthlyKwh(b) - roomMonthlyKwh(a)),
+    [rooms],
+  );
 
   const [floorCount, setFloorCount] = useState(() => {
     const max = rooms.reduce(
@@ -125,7 +131,7 @@ export default function RoomEditScreen() {
           Room List
         </Text>
         <List
-          data={rooms}
+          data={sortedRooms}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <RoomListItem

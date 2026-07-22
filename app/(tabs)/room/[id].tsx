@@ -7,7 +7,7 @@ import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import type { Appliance } from "@/types/appliance";
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +22,13 @@ export default function RoomApplianceScreen() {
 
   const room = rooms.find((r) => r.id === id);
   const roomName = room?.name ?? `Room ${id}`;
-  const appliances = room?.appliances ?? [];
+  const appliances = useMemo(
+    () =>
+      [...(room?.appliances ?? [])].sort(
+        (a, b) => b.power * b.usage - a.power * a.usage,
+      ),
+    [room?.appliances],
+  );
 
   const handleToggleSelect = useCallback(
     (applianceId: string) => {
