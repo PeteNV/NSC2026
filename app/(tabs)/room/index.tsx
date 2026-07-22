@@ -36,6 +36,7 @@ export default function RoomEditScreen() {
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
   const sortedRooms = useMemo(
     () => [...rooms].sort((a, b) => roomMonthlyKwh(b) - roomMonthlyKwh(a)),
@@ -103,6 +104,7 @@ export default function RoomEditScreen() {
               rooms={rooms}
               roomEditable={isRoomEditing}
               applianceEditable={false}
+              selectedRoomId={selectedRoomId ?? undefined}
               selectedFloor={selectedFloor}
               floorCount={floorCount}
               onFloorChange={setSelectedFloor}
@@ -136,7 +138,16 @@ export default function RoomEditScreen() {
           renderItem={({ item }) => (
             <RoomListItem
               room={item}
+              selected={item.id === selectedRoomId}
               selectedFloor={selectedFloor}
+              onToggleSelect={() => {
+                setSelectedRoomId((prev) => (prev === item.id ? null : item.id));
+                setIsRoomEditing(true);
+              }}
+              onRotate={() => {
+                const newRot = ((item.rotation ?? 0) + 90) % 360;
+                updateRoomRotation(item.id, newRot);
+              }}
               onAssignFloor={updateRoomFloor}
               onDelete={() => deleteRoom(item.id)}
             />

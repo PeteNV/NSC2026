@@ -28,6 +28,7 @@ type FloorPlanProps = {
   roomEditable?: boolean;
   applianceEditable?: boolean;
   selectedApplianceId?: string;
+  selectedRoomId?: string;
   onRoomMove?: (roomId: string, origin: { x: number; z: number }) => void;
   onRoomRotate?: (roomId: string, rotation: number) => void;
   onApplianceUpdate?: (roomId: string, appliance: Appliance) => void;
@@ -445,6 +446,7 @@ function RoomGroup({
   applDragDX,
   applDragDY,
   selectedApplianceId,
+  selectedRoomId,
 }: {
   room: Room;
   colors: AppTheme["colors"];
@@ -459,6 +461,7 @@ function RoomGroup({
   applDragDX: SharedValue<number>;
   applDragDY: SharedValue<number>;
   selectedApplianceId?: string;
+  selectedRoomId?: string;
 }) {
   const walls = useMemo(() => room.walls ?? [], [room.walls]);
   const doors = room.doors ?? [];
@@ -467,6 +470,7 @@ function RoomGroup({
   const o = room.origin ?? { x: 0, z: 0 };
 
   const roomRotation = useSharedValue(room.rotation ?? 0);
+  useEffect(() => { roomRotation.value = room.rotation ?? 0; }, [room.rotation]);
 
   const localBounds = useMemo(() => roomBounds(walls), [walls]);
 
@@ -571,6 +575,9 @@ function RoomGroup({
     <G>
         <AnimatedG animatedProps={animatedProps}>
           <Path d={floorPath} fill={colors.surfaceContainerHighest} />
+          {selectedRoomId === room.id && (
+            <Path d={floorPath} fill="none" stroke={colors.primary} strokeWidth={6} strokeDasharray={[8, 4]} />
+          )}
 
           {appliances.map((a) => {
             if (!a.position || !a.dimensions) return null;
@@ -763,6 +770,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
   roomEditable,
   applianceEditable,
   selectedApplianceId,
+  selectedRoomId,
   onRoomMove,
   onRoomRotate,
   onApplianceUpdate,
@@ -948,6 +956,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
 
   const roomPan = Gesture.Pan()
     .enabled(!!hasAnyEditMode)
+    .minDistance(8)
     .maxPointers(1)
     .onStart((e) => {
       const lx = e.absoluteX - svgPos.value.x;
@@ -988,6 +997,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
       if (!hitAppl) {
         for (const roomData of hitData) {
           const cx = roomData.centerScreen.sx;
+          if (selectedRoomId && roomData.roomId !== selectedRoomId) continue;
           const cy = roomData.centerScreen.sy;
           if (
             lx >= cx - roomData.roomScreenW / 2 &&
@@ -1098,7 +1108,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
 
   const roomDoubleTap = Gesture.Tap()
     .numberOfTaps(2)
-    .maxDelay(150)
+    .maxDelay(250)
     .enabled(!!hasAnyEditMode)
     .onEnd((e) => {
       const lx = e.absoluteX - svgPos.value.x;
@@ -1138,6 +1148,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
 
       if (!hitAppl) {
         for (const roomData of hitData) {
+          if (selectedRoomId && roomData.roomId !== selectedRoomId) continue;
           const cx = roomData.centerScreen.sx;
           const cy = roomData.centerScreen.sy;
           if (
@@ -1316,6 +1327,7 @@ const FloorPlan: StylableFC<FloorPlanProps> = ({
                 applDragDX={applDragDX}
                 applDragDY={applDragDY}
                 selectedApplianceId={room.appliances?.some((a) => a.id === selectedApplianceId) ? selectedApplianceId : undefined}
+                selectedRoomId={selectedRoomId}
               />
             ))}
           </AnimatedG>

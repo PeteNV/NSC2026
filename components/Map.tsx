@@ -30,6 +30,7 @@ const Map: StylableFC<{
   roomEditable?: boolean;
   applianceEditable?: boolean;
   selectedApplianceId?: string;
+  selectedRoomId?: string;
   selectedFloor?: number;
   floorCount?: number;
   onFloorChange?: (floor: number) => void;
@@ -55,6 +56,7 @@ const Map: StylableFC<{
   onToggleRoomEdit,
   onToggleApplianceEdit,
   selectedApplianceId,
+  selectedRoomId,
   onRoomMove,
   onRoomRotate,
   onApplianceUpdate,
@@ -94,6 +96,7 @@ const Map: StylableFC<{
             roomEditable={roomEditable}
             applianceEditable={applianceEditable}
             selectedApplianceId={selectedApplianceId}
+            selectedRoomId={selectedRoomId}
             onRoomMove={onRoomMove}
             onRoomRotate={onRoomRotate}
             onApplianceUpdate={onApplianceUpdate}

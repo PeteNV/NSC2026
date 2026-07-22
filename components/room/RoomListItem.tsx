@@ -6,7 +6,7 @@ import { roomMonthlyKwh } from "@/utils/energy";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { Button, Dialog, Menu, Portal, Text, TouchableRipple } from "react-native-paper";
 
@@ -16,10 +16,26 @@ const RoomListItem: StylableFC<{
   onPress?: () => void;
   onDelete?: () => void;
   onAssignFloor?: (roomId: string, floor: number) => void;
-}> = ({ room, selectedFloor, onPress, onDelete, onAssignFloor, className, style }) => {
+  onRotate?: () => void;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+}> = ({ room, selectedFloor, onPress, onDelete, onAssignFloor, onRotate, selected, onToggleSelect, className, style }) => {
   const { colors } = useTheme();
   const [menuVisible, setMenuVisible] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const pendingAction = useRef<"delete" | "select" | "rotate" | null>(null);
+
+  useEffect(() => {
+    if (!menuVisible && pendingAction.current) {
+      const action = pendingAction.current;
+      pendingAction.current = null;
+      requestAnimationFrame(() => {
+        if (action === "delete") setDeleteDialogVisible(true);
+        else if (action === "select") onToggleSelect?.();
+        else if (action === "rotate") onRotate?.();
+      });
+    }
+  }, [menuVisible, onToggleSelect, onRotate]);
 
   return (
     <View
@@ -28,15 +44,18 @@ const RoomListItem: StylableFC<{
     >
       <View
         className="h-20 flex-row items-center rounded px-4"
-        style={{ borderColor: colors.outlineVariant }}
+        style={[
+          { borderColor: colors.outlineVariant },
+          selected && { borderColor: colors.primary, borderWidth: 2, backgroundColor: colors.primaryContainer },
+        ]}
       >
         <TouchableRipple
-          onPress={() =>
+          onPress={onToggleSelect ?? (() =>
             router.push({
               pathname: "/room/[id]",
               params: { id: room.id },
             })
-          }
+          )}
           className="flex-1 flex-row items-center gap-4 py-4"
         >
           <>
@@ -89,6 +108,28 @@ const RoomListItem: StylableFC<{
           )}
           <Menu.Item
             leadingIcon={({ size, color }) => (
+              <MaterialIcons name="touch-app" size={size} color={color} />
+            )}
+            onPress={() => {
+              pendingAction.current = "select";
+              setMenuVisible(false);
+            }}
+            title={selected ? "Deselect" : "Toggle select"}
+          />
+          {onRotate && room.walls && (
+            <Menu.Item
+              leadingIcon={({ size, color }) => (
+                <MaterialIcons name="rotate-right" size={size} color={color} />
+              )}
+              onPress={() => {
+                pendingAction.current = "rotate";
+                setMenuVisible(false);
+              }}
+              title="Rotate 90°"
+            />
+          )}
+          <Menu.Item
+            leadingIcon={({ size, color }) => (
               <MaterialIcons name="edit" size={size} color={color} />
             )}
             onPress={() => {
@@ -105,8 +146,8 @@ const RoomListItem: StylableFC<{
               <MaterialIcons name="delete" size={size} color={colors.error} />
             )}
             onPress={() => {
+              pendingAction.current = "delete";
               setMenuVisible(false);
-              setDeleteDialogVisible(true);
             }}
             title="Delete"
             titleStyle={{ color: colors.error }}
