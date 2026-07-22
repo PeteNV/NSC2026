@@ -78,7 +78,7 @@ export default function ReportScreen() {
     () =>
       Array.from({ length: roomSteps + 1 }, (_, i) => {
         const v = Math.round(roomStepSize * i);
-        return `${formatNumber(v)} kWh`;
+        return `${formatNumber(v)}`;
       }),
     [roomMax],
   );
