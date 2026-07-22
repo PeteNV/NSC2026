@@ -76,6 +76,7 @@ export default function RoomEditScreen() {
     if (!lastResult) return;
     const roomId = String(Date.now());
     const room = mapScanToRoom(lastResult, roomId, "Scanned Room");
+    room.floor = selectedFloor;
     addRoom(room);
   }, [lastResult]);
 
