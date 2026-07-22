@@ -13,6 +13,7 @@ const LABEL_WIDTH = 96;
 const LABEL_GAP = 12;
 const BAR_HEIGHT = 16;
 const ROW_GAP = 12;
+const VALUE_WIDTH = 60;
 
 const BarChart: StylableFC<{
   data: BarChartDatum[];
@@ -83,6 +84,17 @@ const BarChart: StylableFC<{
                     />
                   ) : null}
                   <View style={{ flex: 1 - fraction }} />
+                </View>
+                <View style={{ width: VALUE_WIDTH, paddingLeft: 8 }}>
+                  <Text
+                    variant="bodyMedium"
+                    style={{
+                      fontWeight: "500",
+                      color: colors.onSurfaceVariant,
+                    }}
+                  >
+                    {Math.round(item.value).toLocaleString()}
+                  </Text>
                 </View>
               </View>
             );

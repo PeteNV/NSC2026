@@ -1,7 +1,9 @@
 import Card from "@/components/common/Card";
 import { useTheme } from "@/hooks/useTheme";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
+import { useUser } from "@/hooks/useUser";
 import { summarizeEnergy } from "@/utils/energy";
+import { provinceTierComparison } from "@/utils/provincial-baseline";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import React, { useMemo } from "react";
@@ -13,8 +15,17 @@ const kwh = (n: number) => Math.round(n).toLocaleString();
 export default function Estimate() {
   const { colors } = useTheme();
   const { rooms } = usePersistedRooms();
+  const { user } = useUser();
   const summary = useMemo(() => summarizeEnergy(rooms), [rooms]);
-  const deltaSign = summary.deltaKwh >= 0 ? "+" : "-";
+
+  const tierComparison = useMemo(() => {
+    if (!user?.location || rooms.length === 0) return null;
+    return provinceTierComparison(
+      summary.monthlyKwh,
+      user.location,
+      user.people,
+    );
+  }, [user?.location, user?.people, summary.monthlyKwh, rooms.length]);
   return (
     <Card style={{ backgroundColor: colors.surfaceContainer }}>
       <Text variant="titleSmall" style={{ color: colors.onSurfaceVariant }}>
@@ -47,17 +58,19 @@ export default function Estimate() {
           kWh{" "}
         </Text>
       </Text>
-      <Text
-        variant="bodyMedium"
-        style={{ fontWeight: "bold", color: colors.secondary }}
-      >
-        {" "}
-        {deltaSign}
-        {kwh(Math.abs(summary.deltaKwh))}{" "}
-        <Text variant="bodyMedium" style={{ color: colors.secondary }}>
-          kWh from Base Estimation of {kwh(summary.baselineKwh)} kWh{" "}
+      {tierComparison && (
+        <Text
+          variant="bodyMedium"
+          style={{ fontWeight: "bold", color: colors.secondary }}
+        >
+          {" "}
+          {tierComparison.deltaKwh >= 0 ? "+" : "-"}
+          {kwh(Math.abs(tierComparison.deltaKwh))}{" "}
+          <Text variant="bodyMedium" style={{ color: colors.secondary }}>
+            kWh from Base Estimation of {kwh(tierComparison.scaledTierKwh)} kWh{" "}
+          </Text>
         </Text>
-      </Text>
+      )}
       <View
         className="-mx-4 border-b"
         style={{

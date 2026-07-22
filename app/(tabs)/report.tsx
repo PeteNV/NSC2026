@@ -72,6 +72,16 @@ export default function ReportScreen() {
     Math.max(...roomData.map((d) => d.value), 0),
     50,
   );
+  const roomSteps = 4;
+  const roomStepSize = roomMax / roomSteps;
+  const roomAxisLabels = useMemo(
+    () =>
+      Array.from({ length: roomSteps + 1 }, (_, i) => {
+        const v = Math.round(roomStepSize * i);
+        return `${formatNumber(v)} kWh`;
+      }),
+    [roomMax],
+  );
 
   const summary = useMemo(() => summarizeEnergy(rooms), [rooms]);
   const cost = calcCostBaht(summary.monthlyKwh);
@@ -344,7 +354,7 @@ export default function ReportScreen() {
               <BarChart
                 data={roomData}
                 max={roomMax}
-                axisLabels={["0 kWh", `${formatNumber(roomMax)} kWh`]}
+                axisLabels={roomAxisLabels}
               />
             </Card>
           )}
