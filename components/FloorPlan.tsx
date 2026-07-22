@@ -199,12 +199,8 @@ const ELECTRONICS = new Set([
 ]);
 
 function applianceColorKey(name: string): ThemeColorKey {
-  if (COOLING.has(name)) return "secondaryContainer";
-  if (COOKING.has(name)) return "errorContainer";
-  if (WATER.has(name)) return "tertiaryContainer";
   if (FURNITURE.has(name)) return "surfaceContainerHigh";
-  if (ELECTRONICS.has(name)) return "primaryContainer";
-  return "surfaceContainerHigh";
+  return "primaryContainer";
 }
 
 function applianceColor(name: string, colors: AppTheme["colors"]): string {
@@ -588,7 +584,8 @@ function RoomGroup({
             );
             const aw = Math.max(a.dimensions.x * scale, 12);
             const ah = Math.max(a.dimensions.z * scale, 12);
-            const color = applianceColor(a.name, colors);
+            const isElectric = a.power > 0 && a.usage > 0;
+            const color = isElectric ? colors.primaryContainer : colors.surfaceContainerHigh;
 
             return (
               <G key={a.id}>
@@ -602,7 +599,7 @@ function RoomGroup({
                   fontSize={Math.min(aw / 5, ah / 2.5, 8)}
                   fill={color}
                   stroke={selectedApplianceId === a.id ? colors.primary : colors.outline}
-                  onSurfaceFill={colors.onSurface}
+                  onSurfaceFill={isElectric ? colors.onPrimaryContainer : colors.onSurfaceVariant}
                   displayRot={a.rotation ?? 0}
                   rotation={roomRotation}
                   isDragging={draggingApplianceId}

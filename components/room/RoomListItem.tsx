@@ -2,6 +2,7 @@ import { useTheme } from "@/hooks/useTheme";
 import type { Room } from "@/types/room";
 import { type StylableFC } from "@/types/common";
 import { roomIcon } from "@/utils/icons";
+import { roomMonthlyKwh } from "@/utils/energy";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import clsx from "clsx";
 import { router } from "expo-router";
@@ -50,7 +51,7 @@ const RoomListItem: StylableFC<{
                 variant="bodyMedium"
                 style={{ color: colors.onSurfaceVariant }}
               >
-                {room.applianceCount} appliances {"•"} {room.power.toFixed(2)} kWh
+                {room.applianceCount} appliances {"•"} {Math.round(roomMonthlyKwh(room)).toLocaleString()} kWh/month
               </Text>
             </View>
           </>
