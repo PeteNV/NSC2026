@@ -3,21 +3,23 @@ import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
 import ApplianceListItem from "@/components/room/ApplianceListItem";
+import EditApplianceDialog from "@/components/room/EditApplianceDialog";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
 import { useTheme } from "@/hooks/useTheme";
 import type { Appliance } from "@/types/appliance";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RoomApplianceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { rooms, updateAppliance, deleteAppliance } = usePersistedRooms();
+  const { rooms, updateAppliance, deleteAppliance, addAppliance } = usePersistedRooms();
   const [isEditing, setIsEditing] = useState(false);
+  const [showAddApplianceDialog, setShowAddApplianceDialog] = useState(false);
   const [selectedApplianceId, setSelectedApplianceId] = useState<string | null>(null);
 
   const room = rooms.find((r) => r.id === id);
@@ -53,6 +55,14 @@ export default function RoomApplianceScreen() {
       if (id) deleteAppliance(id, applianceId);
     },
     [id, deleteAppliance],
+  );
+
+  const handleAddAppliance = useCallback(
+    (data: Appliance) => {
+      if (id) addAppliance(id, { ...data, source: "manual" });
+      setShowAddApplianceDialog(false);
+    },
+    [id, addAppliance],
   );
 
   return (
@@ -92,6 +102,16 @@ export default function RoomApplianceScreen() {
           <Text variant="headlineSmall" className="px-9 py-5">
             Appliances in Room {id}
           </Text>
+          <View className="px-9 pb-3">
+            <Button
+              mode="contained"
+              icon="plus"
+              onPress={() => setShowAddApplianceDialog(true)}
+              style={{ borderRadius: 8 }}
+            >
+              Add Appliance
+            </Button>
+          </View>
           <List
             data={appliances}
             keyExtractor={(item) => item.id}
@@ -110,6 +130,11 @@ export default function RoomApplianceScreen() {
           />
         </View>
       </View>
+      <EditApplianceDialog
+        visible={showAddApplianceDialog}
+        onDismiss={() => setShowAddApplianceDialog(false)}
+        onSave={handleAddAppliance}
+      />
     </View>
   );
 }

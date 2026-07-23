@@ -2,6 +2,7 @@ import AppBar from "@/components/common/AppBar";
 import Card from "@/components/common/Card";
 import List from "@/components/common/List";
 import Map from "@/components/Map";
+import ManualRoomDialog from "@/components/room/ManualRoomDialog";
 import RoomListItem from "@/components/room/RoomListItem";
 import ScanRoomButton from "@/components/room/ScanRoomButton";
 import { usePersistedRooms } from "@/hooks/usePersistedRooms";
@@ -36,6 +37,7 @@ export default function RoomEditScreen() {
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [isRoomEditing, setIsRoomEditing] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showManualRoomDialog, setShowManualRoomDialog] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
   const sortedRooms = useMemo(
@@ -87,6 +89,15 @@ export default function RoomEditScreen() {
     addRoom(room);
   }, [lastResult]);
 
+  const handleManualRoomSave = useCallback(
+    (room: Room) => {
+      room.floor = selectedFloor;
+      addRoom(room);
+      setShowManualRoomDialog(false);
+    },
+    [selectedFloor, addRoom],
+  );
+
   return (
     <View
       className="flex-1"
@@ -117,7 +128,10 @@ export default function RoomEditScreen() {
             />
           )}
         </Card>
-        <ScanRoomButton onScanRoom={handleScanRoom} onManualEntry={() => {}} />
+        <ScanRoomButton
+          onScanRoom={handleScanRoom}
+          onManualEntry={() => setShowManualRoomDialog(true)}
+        />
       </View>
 
       {/* Room List */}
@@ -156,6 +170,11 @@ export default function RoomEditScreen() {
       </View>
 
       <Portal>
+        <ManualRoomDialog
+          visible={showManualRoomDialog}
+          onDismiss={() => setShowManualRoomDialog(false)}
+          onSave={handleManualRoomSave}
+        />
         <Dialog
           visible={showDeleteDialog}
           onDismiss={() => setShowDeleteDialog(false)}

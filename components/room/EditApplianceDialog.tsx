@@ -27,6 +27,20 @@ const APPLIANCE_TYPES = [
   "Other",
 ];
 
+const DEFAULT_DIMENSIONS: Record<string, { x: number; y: number; z: number }> = {
+  "Air conditioner": { x: 0.9, y: 0.3, z: 0.3 },
+  Refrigerator: { x: 0.8, y: 1.8, z: 0.7 },
+  "Washing Machine": { x: 0.6, y: 0.9, z: 0.6 },
+  Television: { x: 1.2, y: 0.7, z: 0.1 },
+  Microwave: { x: 0.5, y: 0.3, z: 0.4 },
+  "Water Heater": { x: 0.4, y: 0.6, z: 0.2 },
+  Laptop: { x: 0.35, y: 0.02, z: 0.25 },
+  "Ceiling Fan": { x: 1.2, y: 0.3, z: 1.2 },
+  "Clothes Dryer": { x: 0.6, y: 0.9, z: 0.6 },
+  "LED Lights": { x: 0.15, y: 0.05, z: 0.15 },
+  Other: { x: 0.5, y: 0.5, z: 0.5 },
+};
+
 const EditApplianceDialog: StylableFC<{
   visible: boolean;
   onDismiss: () => void;
@@ -73,12 +87,18 @@ const EditApplianceDialog: StylableFC<{
   const handleSave = () => {
     const hoursNum = parseInt(hours, 10) || 0;
     const minutesNum = parseInt(minutes, 10) || 0;
+    const isNew = !appliance;
     onSave?.({
       ...appliance,
       id: appliance?.id ?? String(Date.now()),
       name,
       usage: hoursNum + minutesNum / 60,
       power: parseInt(power, 10) || 0,
+      ...(isNew && {
+        dimensions: DEFAULT_DIMENSIONS[name] ?? DEFAULT_DIMENSIONS.Other,
+        position: { x: 0, y: 0, z: 0 },
+        rotation: 0,
+      }),
     });
   };
 
